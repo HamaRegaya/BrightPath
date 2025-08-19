@@ -25,6 +25,7 @@ const Whiteboard: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<{ x: number; y: number }[]>([]);
   const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const [isShiftPressed, setIsShiftPressed] = useState(false);
   const [aiTextElements, setAITextElements] = useState<Array<{
     id: string;
     position: { x: number; y: number };
@@ -47,6 +48,29 @@ const Whiteboard: React.FC = () => {
     window.addEventListener('resize', resizeCanvas);
     return () => window.removeEventListener('resize', resizeCanvas);
   }, [redrawCanvas]);
+
+  // Handle keyboard events for SHIFT key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') {
+        setIsShiftPressed(true);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') {
+        setIsShiftPressed(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -114,6 +138,7 @@ const Whiteboard: React.FC = () => {
       }
     } else if (tool === 'pen') {
       setCurrentPath([pos]);
+      setStartPos(pos); // Store start position for straight line drawing
       ctx.beginPath();
       ctx.moveTo(pos.x, pos.y);
     } else if (tool === 'eraser') {
@@ -185,14 +210,34 @@ const Whiteboard: React.FC = () => {
         updateStroke(selectedStrokeId, { path: newPath });
       }
     } else if (tool === 'pen') {
-      ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = strokeWidth;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
-      
-      setCurrentPath(prev => [...prev, pos]);
+      if (isShiftPressed && startPos) {
+        // Draw straight line when SHIFT is pressed
+        // Clear canvas and redraw everything
+        redrawCanvas(canvas);
+        
+        // Draw the straight line preview
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = strokeWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(startPos.x, startPos.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        
+        // Update current path to only contain start and end points for straight line
+        setCurrentPath([startPos, pos]);
+      } else {
+        // Normal freehand drawing
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = strokeWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        
+        setCurrentPath(prev => [...prev, pos]);
+      }
     } else if (tool === 'eraser') {
       // Draw continuous erasing line
       ctx.globalCompositeOperation = 'destination-out';
