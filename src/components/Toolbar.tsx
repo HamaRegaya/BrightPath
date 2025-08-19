@@ -17,122 +17,190 @@ const Toolbar: React.FC = () => {
     canRedo
   } = useDrawing();
 
-  const tools = [
-    { id: 'pen', icon: Pen, name: 'Pen' },
-    { id: 'eraser', icon: Eraser, name: 'Eraser' },
-    { id: 'rectangle', icon: Square, name: 'Rectangle' },
-    { id: 'circle', icon: Circle, name: 'Circle' },
-    { id: 'text', icon: Type, name: 'Text' }
+  const drawingTools = [
+    { id: 'pen', icon: Pen, name: 'Pen', category: 'drawing' },
+    { id: 'eraser', icon: Eraser, name: 'Eraser', category: 'drawing' }
+  ];
+
+  const shapeTools = [
+    { id: 'rectangle', icon: Square, name: 'Rectangle', category: 'shape' },
+    { id: 'circle', icon: Circle, name: 'Circle', category: 'shape' },
+    { id: 'text', icon: Type, name: 'Text', category: 'shape' }
   ];
 
   const colors = [
-    '#000000', '#2563EB', '#DC2626', '#16A34A', 
-    '#CA8A04', '#9333EA', '#C2410C', '#0891B2'
+    { color: '#000000', name: 'Black' },
+    { color: '#2563EB', name: 'Blue' },
+    { color: '#DC2626', name: 'Red' },
+    { color: '#16A34A', name: 'Green' },
+    { color: '#CA8A04', name: 'Yellow' },
+    { color: '#9333EA', name: 'Purple' },
+    { color: '#C2410C', name: 'Orange' },
+    { color: '#0891B2', name: 'Cyan' }
   ];
 
-  const strokeWidths = [2, 4, 6, 8, 12];
+  const strokeWidths = [
+    { width: 2, name: 'Extra Fine' },
+    { width: 4, name: 'Fine' },
+    { width: 6, name: 'Medium' },
+    { width: 8, name: 'Thick' },
+    { width: 12, name: 'Extra Thick' }
+  ];
 
   return (
-    <div className="w-20 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-4">
-      {/* Drawing Tools */}
-      <div className="space-y-2">
-        {tools.map((toolItem) => {
-          const Icon = toolItem.icon;
-          return (
+    <div className="w-24 bg-white border-r border-gray-200 flex flex-col py-6 shadow-sm">
+      {/* Tool Groups Container */}
+      <div className="flex flex-col items-center space-y-6">
+        
+        {/* Drawing Tools Group */}
+        <div className="flex flex-col items-center space-y-1">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            Draw
+          </div>
+          <div className="flex flex-col space-y-2">
+            {drawingTools.map((toolItem) => {
+              const Icon = toolItem.icon;
+              return (
+                <button
+                  key={toolItem.id}
+                  onClick={() => setTool(toolItem.id)}
+                  className={`p-3 rounded-xl transition-all duration-200 group relative ${
+                    tool === toolItem.id
+                      ? 'bg-blue-600 text-white shadow-lg scale-105'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:scale-105'
+                  }`}
+                  title={toolItem.name}
+                >
+                  <Icon className="w-5 h-5" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Shape Tools Group */}
+        <div className="flex flex-col items-center space-y-1">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            Shapes
+          </div>
+          <div className="flex flex-col space-y-2">
+            {shapeTools.map((toolItem) => {
+              const Icon = toolItem.icon;
+              return (
+                <button
+                  key={toolItem.id}
+                  onClick={() => setTool(toolItem.id)}
+                  className={`p-3 rounded-xl transition-all duration-200 group relative ${
+                    tool === toolItem.id
+                      ? 'bg-blue-600 text-white shadow-lg scale-105'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:scale-105'
+                  }`}
+                  title={toolItem.name}
+                >
+                  <Icon className="w-5 h-5" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Separator */}
+        <div className="w-12 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+
+        {/* Colors Group */}
+        <div className="flex flex-col items-center space-y-1">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            Colors
+          </div>
+          <div className="grid grid-cols-2 gap-1.5">
+            {colors.map((colorItem) => (
+              <button
+                key={colorItem.color}
+                onClick={() => setStrokeColor(colorItem.color)}
+                className={`w-8 h-8 rounded-lg border-2 transition-all duration-200 hover:scale-110 ${
+                  strokeColor === colorItem.color
+                    ? 'border-gray-800 scale-110 shadow-lg'
+                    : 'border-gray-300 hover:border-gray-400'
+                }`}
+                style={{ backgroundColor: colorItem.color }}
+                title={colorItem.name}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Separator */}
+        <div className="w-12 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+
+        {/* Stroke Width Group */}
+        <div className="flex flex-col items-center space-y-1">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            Size
+          </div>
+          <div className="flex flex-col space-y-2">
+            {strokeWidths.map((widthItem) => (
+              <button
+                key={widthItem.width}
+                onClick={() => setStrokeWidth(widthItem.width)}
+                className={`p-3 rounded-xl transition-all duration-200 flex items-center justify-center ${
+                  strokeWidth === widthItem.width
+                    ? 'bg-blue-100 text-blue-600 scale-105'
+                    : 'text-gray-600 hover:bg-gray-100 hover:scale-105'
+                }`}
+                title={widthItem.name}
+              >
+                <div
+                  className="bg-current rounded-full"
+                  style={{
+                    width: `${Math.min(widthItem.width, 12)}px`,
+                    height: `${Math.min(widthItem.width, 12)}px`,
+                  }}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Separator */}
+        <div className="w-12 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+
+        {/* Actions Group */}
+        <div className="flex flex-col items-center space-y-1">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            Actions
+          </div>
+          <div className="flex flex-col space-y-2">
             <button
-              key={toolItem.id}
-              onClick={() => setTool(toolItem.id)}
-              className={`p-3 rounded-lg transition-colors group relative ${
-                tool === toolItem.id
-                  ? 'bg-blue-100 text-blue-600'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-              }`}
-              title={toolItem.name}
+              onClick={undo}
+              disabled={!canUndo}
+              className="p-3 rounded-xl transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:scale-105 disabled:hover:scale-100 disabled:hover:bg-transparent"
+              title="Undo"
             >
-              <Icon className="w-5 h-5" />
+              <Undo className="w-5 h-5" />
             </button>
-          );
-        })}
-      </div>
-
-      <div className="h-px bg-gray-200 w-12"></div>
-
-      {/* Colors */}
-      <div className="space-y-1">
-        {colors.map((color) => (
-          <button
-            key={color}
-            onClick={() => setStrokeColor(color)}
-            className={`w-8 h-8 rounded border-2 transition-all ${
-              strokeColor === color
-                ? 'border-gray-800 scale-110'
-                : 'border-gray-300 hover:border-gray-400'
-            }`}
-            style={{ backgroundColor: color }}
-            title={`Color: ${color}`}
-          />
-        ))}
-      </div>
-
-      <div className="h-px bg-gray-200 w-12"></div>
-
-      {/* Stroke Width */}
-      <div className="space-y-2">
-        {strokeWidths.map((width) => (
-          <button
-            key={width}
-            onClick={() => setStrokeWidth(width)}
-            className={`p-2 rounded-lg transition-colors ${
-              strokeWidth === width
-                ? 'bg-blue-100 text-blue-600'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-            title={`Width: ${width}px`}
-          >
-            <div
-              className="bg-current rounded-full"
-              style={{
-                width: `${Math.min(width, 12)}px`,
-                height: `${Math.min(width, 12)}px`,
-              }}
-            />
-          </button>
-        ))}
-      </div>
-
-      <div className="h-px bg-gray-200 w-12"></div>
-
-      {/* Actions */}
-      <div className="space-y-2">
-        <button
-          onClick={undo}
-          disabled={!canUndo}
-          className="p-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-          title="Undo"
-        >
-          <Undo className="w-5 h-5" />
-        </button>
-        <button
-          onClick={redo}
-          disabled={!canRedo}
-          className="p-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-          title="Redo"
-        >
-          <Redo className="w-5 h-5" />
-        </button>
-        <button
-          onClick={clear}
-          className="p-3 rounded-lg transition-colors text-red-600 hover:bg-red-50"
-          title="Clear Board"
-        >
-          <Trash2 className="w-5 h-5" />
-        </button>
-        <button
-          className="p-3 rounded-lg transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-          title="Export"
-        >
-          <Download className="w-5 h-5" />
-        </button>
+            <button
+              onClick={redo}
+              disabled={!canRedo}
+              className="p-3 rounded-xl transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:scale-105 disabled:hover:scale-100 disabled:hover:bg-transparent"
+              title="Redo"
+            >
+              <Redo className="w-5 h-5" />
+            </button>
+            <button
+              onClick={clear}
+              className="p-3 rounded-xl transition-all duration-200 text-red-600 hover:bg-red-50 hover:scale-105"
+              title="Clear Board"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+            <button
+              className="p-3 rounded-xl transition-all duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:scale-105"
+              title="Export"
+            >
+              <Download className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
