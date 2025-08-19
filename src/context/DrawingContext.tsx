@@ -5,6 +5,15 @@ export interface Stroke {
   color: string;
   width: number;
   path: { x: number; y: number }[];
+  id: string;
+}
+
+export interface AIAssistancePoint {
+  id: string;
+  position: { x: number; y: number };
+  strokeId: string;
+  note: string;
+  isVisible: boolean;
 }
 
 interface DrawingContextType {
@@ -17,7 +26,7 @@ interface DrawingContextType {
   isDrawing: boolean;
   setIsDrawing: (drawing: boolean) => void;
   strokes: Stroke[];
-  addStroke: (stroke: Stroke) => void;
+  addStroke: (stroke: Omit<Stroke, 'id'>) => void;
   undo: () => void;
   redo: () => void;
   clear: () => void;
@@ -28,6 +37,10 @@ interface DrawingContextType {
   setCurrentSubject: (subject: string) => void;
   sessionTitle: string;
   setSessionTitle: (title: string) => void;
+  aiAssistancePoints: AIAssistancePoint[];
+  addAIAssistancePoint: (point: AIAssistancePoint) => void;
+  updateAINote: (pointId: string, note: string) => void;
+  toggleAIPointVisibility: (pointId: string) => void;
 }
 
 const DrawingContext = createContext<DrawingContextType | undefined>(undefined);
@@ -53,13 +66,55 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
   const [undoStack, setUndoStack] = useState<Stroke[][]>([]);
   const [currentSubject, setCurrentSubject] = useState('math');
   const [sessionTitle, setSessionTitle] = useState('My Homework Session');
+  const [aiAssistancePoints, setAIAssistancePoints] = useState<AIAssistancePoint[]>([]);
 
-  const addStroke = (stroke: Stroke) => {
+  const addStroke = (stroke: Omit<Stroke, 'id'>) => {
+    // Generate unique ID for the stroke
+    const strokeWithId: Stroke = {
+      ...stroke,
+      id: `stroke-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    };
+    
     setStrokes(prev => {
-      const newStrokes = [...prev, stroke];
+      const newStrokes = [...prev, strokeWithId];
       setUndoStack(prevUndo => [...prevUndo, prev]);
       return newStrokes;
     });
+
+    // Only add AI assistance point for pen strokes (handwriting)
+    if (stroke.tool === 'pen' && stroke.path.length > 5) {
+      // Calculate the end position of the stroke
+      const lastPoint = stroke.path[stroke.path.length - 1];
+      const aiPoint: AIAssistancePoint = {
+        id: `ai-${strokeWithId.id}`,
+        position: { x: lastPoint.x + 20, y: lastPoint.y - 10 },
+        strokeId: strokeWithId.id,
+        note: 'Click to add a note here',
+        isVisible: true
+      };
+      
+      setAIAssistancePoints(prev => [...prev, aiPoint]);
+    }
+  };
+
+  const addAIAssistancePoint = (point: AIAssistancePoint) => {
+    setAIAssistancePoints(prev => [...prev, point]);
+  };
+
+  const updateAINote = (pointId: string, note: string) => {
+    setAIAssistancePoints(prev => 
+      prev.map(point => 
+        point.id === pointId ? { ...point, note } : point
+      )
+    );
+  };
+
+  const toggleAIPointVisibility = (pointId: string) => {
+    setAIAssistancePoints(prev => 
+      prev.map(point => 
+        point.id === pointId ? { ...point, isVisible: !point.isVisible } : point
+      )
+    );
   };
 
   const undo = () => {
@@ -126,7 +181,11 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     currentSubject,
     setCurrentSubject,
     sessionTitle,
-    setSessionTitle
+    setSessionTitle,
+    aiAssistancePoints,
+    addAIAssistancePoint,
+    updateAINote,
+    toggleAIPointVisibility
   };
 
   return (
