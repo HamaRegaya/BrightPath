@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, X } from 'lucide-react';
 import { useDrawing } from '../context/DrawingContext';
 
 const Whiteboard: React.FC = () => {
@@ -14,10 +14,17 @@ const Whiteboard: React.FC = () => {
     strokes,
     redrawCanvas,
     aiAssistancePoints,
-    generateAIText
+    generateAIText,
+    removeAIText
   } = useDrawing();
   
   const [currentPath, setCurrentPath] = useState<{ x: number; y: number }[]>([]);
+  const [aiTextElements, setAITextElements] = useState<Array<{
+    id: string;
+    position: { x: number; y: number };
+    aiPointId: string;
+    text: string;
+  }>>([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,6 +45,36 @@ const Whiteboard: React.FC = () => {
   useEffect(() => {
     if (canvasRef.current) {
       redrawCanvas(canvasRef.current);
+    }
+  }, [strokes, redrawCanvas]);
+
+  // Track AI text elements for showing remove buttons
+  useEffect(() => {
+    const aiTexts = strokes
+      .filter(stroke => stroke.tool === 'ai-text')
+      .map(stroke => ({
+        id: stroke.id,
+        position: stroke.path[0],
+        aiPointId: (stroke as any).aiPointId || '',
+        text: (stroke as any).text || ''
+      }));
+    setAITextElements(aiTexts);
+  }, [strokes]);
+
+  // Redraw canvas periodically when typing to show blinking cursor
+  useEffect(() => {
+    const hasTypingText = strokes.some(stroke => 
+      stroke.tool === 'ai-text' && (stroke as any).isTyping
+    );
+    
+    if (hasTypingText) {
+      const interval = setInterval(() => {
+        if (canvasRef.current) {
+          redrawCanvas(canvasRef.current);
+        }
+      }, 500); // Redraw every 500ms for cursor blinking
+      
+      return () => clearInterval(interval);
     }
   }, [strokes, redrawCanvas]);
 
@@ -160,7 +197,24 @@ const Whiteboard: React.FC = () => {
         >
           <Sparkles size={16} />
         </button>
-      ))})
+      ))}
+
+      {/* Remove buttons for AI-generated text */}
+      {aiTextElements.map((aiText) => (
+        <button
+          key={`remove-${aiText.id}`}
+          onClick={() => removeAIText(aiText.aiPointId)}
+          className="absolute z-10 p-1 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all transform hover:scale-110"
+          style={{
+            left: `${aiText.position.x + (aiText.text.length * 8) + 10}px`, // Position after the text
+            top: `${aiText.position.y - 20}px`, // Position above the text
+          }}
+          title="Remove AI text"
+        >
+          <X size={12} />
+        </button>
+      ))}
+      
       
       {/* Grid overlay for better writing guidance */}
       <div className="absolute inset-0 pointer-events-none opacity-5">

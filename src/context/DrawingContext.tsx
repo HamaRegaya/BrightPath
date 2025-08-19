@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 
 export interface Stroke {
   tool: string;
@@ -14,6 +14,9 @@ export interface AIAssistancePoint {
   strokeId: string;
   isVisible: boolean;
   hasGeneratedText: boolean;
+  isTyping: boolean;
+  fullText: string;
+  currentText: string;
 }
 
 interface DrawingContextType {
@@ -40,6 +43,7 @@ interface DrawingContextType {
   aiAssistancePoints: AIAssistancePoint[];
   addAIAssistancePoint: (point: AIAssistancePoint) => void;
   generateAIText: (pointId: string) => void;
+  removeAIText: (pointId: string) => void;
   toggleAIPointVisibility: (pointId: string) => void;
 }
 
@@ -67,6 +71,9 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
   const [currentSubject, setCurrentSubject] = useState('math');
   const [sessionTitle, setSessionTitle] = useState('My Homework Session');
   const [aiAssistancePoints, setAIAssistancePoints] = useState<AIAssistancePoint[]>([]);
+  const [lastStrokeTime, setLastStrokeTime] = useState<number>(0);
+  const [sparkleTimeout, setSparkleTimeout] = useState<number | null>(null);
+  const [typingIntervals, setTypingIntervals] = useState<Map<string, number>>(new Map());
 
   const addStroke = (stroke: Omit<Stroke, 'id'>) => {
     // Generate unique ID for the stroke
@@ -81,19 +88,37 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       return newStrokes;
     });
 
-    // Only add AI assistance point for pen strokes (handwriting)
+    // Clear any existing sparkle timeout
+    if (sparkleTimeout) {
+      clearTimeout(sparkleTimeout);
+    }
+
+    // Remove all existing AI assistance points (keep only the latest)
+    setAIAssistancePoints([]);
+
+    // Only set up delayed sparkle for pen strokes (handwriting)
     if (stroke.tool === 'pen' && stroke.path.length > 5) {
-      // Calculate the end position of the stroke
-      const lastPoint = stroke.path[stroke.path.length - 1];
-      const aiPoint: AIAssistancePoint = {
-        id: `ai-${strokeWithId.id}`,
-        position: { x: lastPoint.x + 20, y: lastPoint.y - 10 },
-        strokeId: strokeWithId.id,
-        isVisible: true,
-        hasGeneratedText: false
-      };
+      // Update last stroke time
+      setLastStrokeTime(Date.now());
       
-      setAIAssistancePoints(prev => [...prev, aiPoint]);
+      // Set up delayed sparkle appearance
+      const timeoutId = setTimeout(() => {
+        const lastPoint = stroke.path[stroke.path.length - 1];
+        const aiPoint: AIAssistancePoint = {
+          id: `ai-${strokeWithId.id}`,
+          position: { x: lastPoint.x + 20, y: lastPoint.y - 10 },
+          strokeId: strokeWithId.id,
+          isVisible: true,
+          hasGeneratedText: false,
+          isTyping: false,
+          fullText: '',
+          currentText: ''
+        };
+        
+        setAIAssistancePoints([aiPoint]); // Only keep the latest sparkle
+      }, 3000); // 3 second delay
+
+      setSparkleTimeout(timeoutId);
     }
   };
 
@@ -140,22 +165,35 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     const subjectTexts = aiTexts[currentSubject as keyof typeof aiTexts] || aiTexts.general;
     const randomText = subjectTexts[Math.floor(Math.random() * subjectTexts.length)];
     
-    // Create a text stroke on the canvas
+    // Hide the sparkle and start typing effect
+    setAIAssistancePoints(prev => 
+      prev.map(p => 
+        p.id === pointId ? { 
+          ...p, 
+          isVisible: false, 
+          isTyping: true, 
+          fullText: randomText,
+          currentText: ''
+        } : p
+      )
+    );
+
+    // Create initial AI text stroke (empty)
     const textStroke: Omit<Stroke, 'id'> = {
       tool: 'ai-text',
-      color: '#2563EB', // Blue color for AI text
+      color: '#2563EB',
       width: 2,
       path: [{ x: point.position.x + 30, y: point.position.y + 5 }]
     };
 
-    // Add the AI text as a stroke with metadata
     const strokeWithId: Stroke = {
       ...textStroke,
       id: `ai-text-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     };
 
-    // Store the text content in a custom property
-    (strokeWithId as any).text = randomText;
+    (strokeWithId as any).text = '';
+    (strokeWithId as any).aiPointId = pointId;
+    (strokeWithId as any).isTyping = true;
 
     setStrokes(prev => {
       const newStrokes = [...prev, strokeWithId];
@@ -163,10 +201,112 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       return newStrokes;
     });
 
-    // Mark the AI point as having generated text and hide it
+    // Start typing animation
+    let currentIndex = 0;
+    const typingSpeed = 100; // milliseconds per character
+
+    const typeText = () => {
+      if (currentIndex <= randomText.length) {
+        const currentText = randomText.substring(0, currentIndex);
+        
+        // Update the stroke with current text
+        setStrokes(prev => 
+          prev.map(stroke => {
+            if (stroke.id === strokeWithId.id) {
+              (stroke as any).text = currentText;
+            }
+            return stroke;
+          })
+        );
+
+        // Update AI point current text
+        setAIAssistancePoints(prev => 
+          prev.map(p => 
+            p.id === pointId ? { ...p, currentText } : p
+          )
+        );
+
+        currentIndex++;
+        
+        if (currentIndex <= randomText.length) {
+          const timeoutId = setTimeout(typeText, typingSpeed);
+          setTypingIntervals(prev => {
+            const newMap = new Map(prev);
+            newMap.set(pointId, timeoutId);
+            return newMap;
+          });
+        } else {
+          // Typing finished
+          setAIAssistancePoints(prev => 
+            prev.map(p => 
+              p.id === pointId ? { 
+                ...p, 
+                isTyping: false, 
+                hasGeneratedText: true,
+                currentText: randomText
+              } : p
+            )
+          );
+
+          setStrokes(prev => 
+            prev.map(stroke => {
+              if (stroke.id === strokeWithId.id) {
+                (stroke as any).isTyping = false;
+              }
+              return stroke;
+            })
+          );
+
+          // Remove from typing intervals
+          setTypingIntervals(prev => {
+            const newMap = new Map(prev);
+            newMap.delete(pointId);
+            return newMap;
+          });
+        }
+      }
+    };
+
+    // Start typing with a small delay
+    setTimeout(typeText, 300);
+  };
+
+  const removeAIText = (pointId: string) => {
+    // Clear any active typing interval
+    const intervalId = typingIntervals.get(pointId);
+    if (intervalId) {
+      clearTimeout(intervalId);
+      setTypingIntervals(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(pointId);
+        return newMap;
+      });
+    }
+
+    // Find and remove the AI text stroke associated with this point
+    setStrokes(prev => {
+      const filteredStrokes = prev.filter(stroke => {
+        return !(stroke.tool === 'ai-text' && (stroke as any).aiPointId === pointId);
+      });
+      
+      if (filteredStrokes.length !== prev.length) {
+        setUndoStack(prevUndo => [...prevUndo, prev]);
+      }
+      
+      return filteredStrokes;
+    });
+
+    // Show the sparkle again and reset typing state
     setAIAssistancePoints(prev => 
       prev.map(p => 
-        p.id === pointId ? { ...p, hasGeneratedText: true, isVisible: false } : p
+        p.id === pointId ? { 
+          ...p, 
+          hasGeneratedText: false, 
+          isVisible: true, 
+          isTyping: false,
+          fullText: '',
+          currentText: ''
+        } : p
       )
     );
   };
@@ -184,6 +324,20 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       const previousState = undoStack[undoStack.length - 1];
       setStrokes(previousState);
       setUndoStack(prev => prev.slice(0, -1));
+      
+      // Clear sparkles and typing intervals when undoing
+      if (sparkleTimeout) {
+        clearTimeout(sparkleTimeout);
+        setSparkleTimeout(null);
+      }
+      
+      // Clear all typing intervals
+      typingIntervals.forEach((intervalId) => {
+        clearTimeout(intervalId);
+      });
+      setTypingIntervals(new Map());
+      
+      setAIAssistancePoints([]);
     }
   };
 
@@ -195,6 +349,20 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     if (strokes.length > 0) {
       setUndoStack(prev => [...prev, strokes]);
       setStrokes([]);
+      
+      // Clear sparkles and typing intervals when clearing canvas
+      if (sparkleTimeout) {
+        clearTimeout(sparkleTimeout);
+        setSparkleTimeout(null);
+      }
+      
+      // Clear all typing intervals
+      typingIntervals.forEach((intervalId) => {
+        clearTimeout(intervalId);
+      });
+      setTypingIntervals(new Map());
+      
+      setAIAssistancePoints([]);
     }
   };
 
@@ -209,10 +377,25 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
 
       if (stroke.tool === 'ai-text') {
         // Render AI text
-        const text = (stroke as any).text || 'AI Help';
+        const text = (stroke as any).text || '';
+        const isTyping = (stroke as any).isTyping || false;
+        
         ctx.font = '16px Arial';
         ctx.fillStyle = stroke.color;
         ctx.fillText(text, stroke.path[0].x, stroke.path[0].y);
+        
+        // Add blinking cursor if typing
+        if (isTyping) {
+          const textWidth = ctx.measureText(text).width;
+          const cursorX = stroke.path[0].x + textWidth;
+          const cursorY = stroke.path[0].y;
+          
+          // Simple blinking effect using timestamp
+          const shouldShowCursor = Math.floor(Date.now() / 500) % 2 === 0;
+          if (shouldShowCursor) {
+            ctx.fillText('|', cursorX, cursorY);
+          }
+        }
       } else {
         // Render normal strokes
         ctx.beginPath();
@@ -231,6 +414,19 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       }
     });
   }, [strokes]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (sparkleTimeout) {
+        clearTimeout(sparkleTimeout);
+      }
+      // Clear all typing intervals
+      typingIntervals.forEach((intervalId) => {
+        clearTimeout(intervalId);
+      });
+    };
+  }, [sparkleTimeout, typingIntervals]);
 
   const value: DrawingContextType = {
     tool,
@@ -256,6 +452,7 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     aiAssistancePoints,
     addAIAssistancePoint,
     generateAIText,
+    removeAIText,
     toggleAIPointVisibility
   };
 
