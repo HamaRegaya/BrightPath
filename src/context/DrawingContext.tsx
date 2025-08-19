@@ -30,6 +30,7 @@ interface DrawingContextType {
   setIsDrawing: (drawing: boolean) => void;
   strokes: Stroke[];
   addStroke: (stroke: Omit<Stroke, 'id'>) => void;
+  updateStroke: (id: string, updates: Partial<Stroke>) => void;
   undo: () => void;
   redo: () => void;
   clear: () => void;
@@ -45,6 +46,9 @@ interface DrawingContextType {
   generateAIText: (pointId: string) => void;
   removeAIText: (pointId: string) => void;
   toggleAIPointVisibility: (pointId: string) => void;
+  selectedStrokeId: string | null;
+  setSelectedStrokeId: (id: string | null) => void;
+  findStrokeAt: (x: number, y: number) => Stroke | null;
 }
 
 const DrawingContext = createContext<DrawingContextType | undefined>(undefined);
@@ -74,6 +78,7 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
   const [lastStrokeTime, setLastStrokeTime] = useState<number>(0);
   const [sparkleTimeout, setSparkleTimeout] = useState<number | null>(null);
   const [typingIntervals, setTypingIntervals] = useState<Map<string, number>>(new Map());
+  const [selectedStrokeId, setSelectedStrokeId] = useState<string | null>(null);
 
   const addStroke = (stroke: Omit<Stroke, 'id'>) => {
     // Generate unique ID for the stroke
@@ -120,6 +125,65 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
 
       setSparkleTimeout(timeoutId);
     }
+  };
+
+  const updateStroke = (id: string, updates: Partial<Stroke>) => {
+    setStrokes(prev => prev.map(stroke => 
+      stroke.id === id ? { ...stroke, ...updates } : stroke
+    ));
+  };
+
+  const findStrokeAt = (x: number, y: number): Stroke | null => {
+    // Check strokes in reverse order (most recent first)
+    for (let i = strokes.length - 1; i >= 0; i--) {
+      const stroke = strokes[i];
+      
+      if (stroke.tool === 'rectangle') {
+        if (stroke.path.length >= 2) {
+          const startPoint = stroke.path[0];
+          const endPoint = stroke.path[stroke.path.length - 1];
+          const minX = Math.min(startPoint.x, endPoint.x);
+          const maxX = Math.max(startPoint.x, endPoint.x);
+          const minY = Math.min(startPoint.y, endPoint.y);
+          const maxY = Math.max(startPoint.y, endPoint.y);
+          
+          if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+            return stroke;
+          }
+        }
+      } else if (stroke.tool === 'circle') {
+        if (stroke.path.length >= 2) {
+          const startPoint = stroke.path[0];
+          const endPoint = stroke.path[stroke.path.length - 1];
+          
+          // Calculate circle center and radius using the same logic as rendering
+          const dx = endPoint.x - startPoint.x;
+          const dy = endPoint.y - startPoint.y;
+          const centerX = startPoint.x + dx / 2;
+          const centerY = startPoint.y + dy / 2;
+          const radius = Math.sqrt(dx * dx + dy * dy) / 2;
+          
+          // Check if point is within circle
+          const distFromCenter = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+          if (distFromCenter <= radius + 10) { // Add 10px tolerance
+            return stroke;
+          }
+        }
+      } else if (stroke.tool === 'text' || stroke.tool === 'ai-text') {
+        // Simple bounding box check for text
+        const textPoint = stroke.path[0];
+        const text = (stroke as any).text || '';
+        const fontSize = stroke.tool === 'ai-text' ? 16 : stroke.width * 4;
+        const textWidth = text.length * fontSize * 0.6; // Rough text width estimation
+        
+        if (x >= textPoint.x && x <= textPoint.x + textWidth && 
+            y >= textPoint.y - fontSize && y <= textPoint.y) {
+          return stroke;
+        }
+      }
+    }
+    
+    return null;
   };
 
   const addAIAssistancePoint = (point: AIAssistancePoint) => {
@@ -462,7 +526,40 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
         ctx.stroke();
       }
     });
-  }, [strokes]);
+
+    // Draw selection outline for selected stroke
+    if (selectedStrokeId) {
+      const selectedStroke = strokes.find(s => s.id === selectedStrokeId);
+      if (selectedStroke) {
+        ctx.save();
+        ctx.strokeStyle = '#3b82f6'; // Blue selection color
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]); // Dashed line
+        
+        if (selectedStroke.tool === 'rectangle' && selectedStroke.path.length >= 2) {
+          const startPoint = selectedStroke.path[0];
+          const endPoint = selectedStroke.path[selectedStroke.path.length - 1];
+          const width = endPoint.x - startPoint.x;
+          const height = endPoint.y - startPoint.y;
+          ctx.strokeRect(startPoint.x - 5, startPoint.y - 5, width + 10, height + 10);
+        } else if (selectedStroke.tool === 'circle' && selectedStroke.path.length >= 2) {
+          const startPoint = selectedStroke.path[0];
+          const endPoint = selectedStroke.path[selectedStroke.path.length - 1];
+          const dx = endPoint.x - startPoint.x;
+          const dy = endPoint.y - startPoint.y;
+          const centerX = startPoint.x + dx / 2;
+          const centerY = startPoint.y + dy / 2;
+          const radius = Math.sqrt(dx * dx + dy * dy) / 2;
+          
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius + 5, 0, 2 * Math.PI);
+          ctx.stroke();
+        }
+        
+        ctx.restore();
+      }
+    }
+  }, [strokes, selectedStrokeId]);
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -488,6 +585,7 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     setIsDrawing,
     strokes,
     addStroke,
+    updateStroke,
     undo,
     redo,
     clear,
@@ -502,7 +600,10 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     addAIAssistancePoint,
     generateAIText,
     removeAIText,
-    toggleAIPointVisibility
+    toggleAIPointVisibility,
+    selectedStrokeId,
+    setSelectedStrokeId,
+    findStrokeAt
   };
 
   return (

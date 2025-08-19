@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pen, Eraser, Square, Circle, Type, Undo, Redo, Trash2, Download } from 'lucide-react';
+import { Pen, Eraser, Square, Circle, Type, Undo, Redo, Trash2, Download, Move } from 'lucide-react';
 import { useDrawing } from '../context/DrawingContext';
 
 const Toolbar: React.FC = () => {
@@ -19,7 +19,8 @@ const Toolbar: React.FC = () => {
 
   const drawingTools = [
     { id: 'pen', icon: Pen, name: 'Pen', category: 'drawing' },
-    { id: 'eraser', icon: Eraser, name: 'Eraser', category: 'drawing' }
+    { id: 'eraser', icon: Eraser, name: 'Eraser', category: 'drawing' },
+    { id: 'move', icon: Move, name: 'Move', category: 'drawing' }
   ];
 
   const shapeTools = [

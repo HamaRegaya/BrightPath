@@ -11,15 +11,20 @@ const Whiteboard: React.FC = () => {
     isDrawing,
     setIsDrawing,
     addStroke,
+    updateStroke,
     strokes,
     redrawCanvas,
     aiAssistancePoints,
     generateAIText,
-    removeAIText
+    removeAIText,
+    selectedStrokeId,
+    setSelectedStrokeId,
+    findStrokeAt
   } = useDrawing();
   
   const [currentPath, setCurrentPath] = useState<{ x: number; y: number }[]>([]);
   const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [aiTextElements, setAITextElements] = useState<Array<{
     id: string;
     position: { x: number; y: number };
@@ -90,7 +95,24 @@ const Whiteboard: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    if (tool === 'pen') {
+    if (tool === 'move') {
+      // Check if we clicked on an existing shape
+      const clickedStroke = findStrokeAt(pos.x, pos.y);
+      if (clickedStroke) {
+        setSelectedStrokeId(clickedStroke.id);
+        
+        // Calculate offset from click point to shape origin
+        const startPoint = clickedStroke.path[0];
+        setDragOffset({
+          x: pos.x - startPoint.x,
+          y: pos.y - startPoint.y
+        });
+      } else {
+        // Clicked on empty space, deselect
+        setSelectedStrokeId(null);
+        setDragOffset(null);
+      }
+    } else if (tool === 'pen') {
       setCurrentPath([pos]);
       ctx.beginPath();
       ctx.moveTo(pos.x, pos.y);
@@ -140,7 +162,29 @@ const Whiteboard: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    if (tool === 'pen') {
+    if (tool === 'move' && selectedStrokeId && dragOffset) {
+      // Move the selected shape
+      const selectedStroke = strokes.find(s => s.id === selectedStrokeId);
+      if (selectedStroke) {
+        const newStartPos = {
+          x: pos.x - dragOffset.x,
+          y: pos.y - dragOffset.y
+        };
+        
+        // Calculate the difference in position
+        const oldStartPos = selectedStroke.path[0];
+        const deltaX = newStartPos.x - oldStartPos.x;
+        const deltaY = newStartPos.y - oldStartPos.y;
+        
+        // Update all points in the path
+        const newPath = selectedStroke.path.map(point => ({
+          x: point.x + deltaX,
+          y: point.y + deltaY
+        }));
+        
+        updateStroke(selectedStrokeId, { path: newPath });
+      }
+    } else if (tool === 'pen') {
       ctx.strokeStyle = strokeColor;
       ctx.lineWidth = strokeWidth;
       ctx.lineCap = 'round';
@@ -206,6 +250,12 @@ const Whiteboard: React.FC = () => {
       }
     }
 
+    if (tool === 'move') {
+      // Reset drag state
+      setDragOffset(null);
+      return; // Don't add a new stroke for move operations
+    }
+
     if (currentPath.length > 0) {
       addStroke({
         tool,
@@ -227,6 +277,7 @@ const Whiteboard: React.FC = () => {
         className={`w-full h-full ${
           tool === 'eraser' ? 'cursor-eraser' : 
           tool === 'pen' ? 'cursor-crosshair' : 
+          tool === 'move' ? 'cursor-move' :
           tool === 'rectangle' || tool === 'circle' ? 'cursor-crosshair' :
           tool === 'text' ? 'cursor-text' :
           'cursor-default'
