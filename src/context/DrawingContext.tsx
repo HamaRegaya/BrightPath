@@ -49,6 +49,7 @@ interface DrawingContextType {
   selectedStrokeId: string | null;
   setSelectedStrokeId: (id: string | null) => void;
   findStrokeAt: (x: number, y: number) => Stroke | null;
+  exportCanvas: (canvas: HTMLCanvasElement) => void;
 }
 
 const DrawingContext = createContext<DrawingContextType | undefined>(undefined);
@@ -191,6 +192,44 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     }
     
     return null;
+  };
+
+  const exportCanvas = (canvas: HTMLCanvasElement) => {
+    try {
+      // Create a temporary canvas with white background
+      const exportCanvas = document.createElement('canvas');
+      const exportCtx = exportCanvas.getContext('2d');
+      
+      if (!exportCtx) return;
+      
+      // Set the same dimensions as the original canvas
+      exportCanvas.width = canvas.width;
+      exportCanvas.height = canvas.height;
+      
+      // Fill with white background
+      exportCtx.fillStyle = '#ffffff';
+      exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+      
+      // Draw the original canvas content on top
+      exportCtx.drawImage(canvas, 0, 0);
+      
+      // Convert to blob and download
+      exportCanvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${sessionTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+      }, 'image/png');
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Échec de l\'export. Veuillez réessayer.');
+    }
   };
 
   const addAIAssistancePoint = (point: AIAssistancePoint) => {
@@ -610,7 +649,8 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     toggleAIPointVisibility,
     selectedStrokeId,
     setSelectedStrokeId,
-    findStrokeAt
+    findStrokeAt,
+    exportCanvas
   };
 
   return (

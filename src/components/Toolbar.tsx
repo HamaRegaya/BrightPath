@@ -14,7 +14,8 @@ const Toolbar: React.FC = () => {
     redo,
     clear,
     canUndo,
-    canRedo
+    canRedo,
+    exportCanvas
   } = useDrawing();
 
   const drawingTools = [
@@ -47,6 +48,16 @@ const Toolbar: React.FC = () => {
     { width: 8, name: 'Thick' },
     { width: 12, name: 'Extra Thick' }
   ];
+
+  const handleExport = () => {
+    // Find the canvas element in the whiteboard
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    if (canvas) {
+      exportCanvas(canvas);
+    } else {
+      alert('Aucun dessin à exporter. Veuillez d\'abord dessiner quelque chose.');
+    }
+  };
 
   return (
     <div className="w-24 bg-white border-r border-gray-200 flex flex-col py-6 shadow-sm">
@@ -195,6 +206,7 @@ const Toolbar: React.FC = () => {
               <Trash2 className="w-5 h-5" />
             </button>
             <button
+              onClick={handleExport}
               className="p-3 rounded-xl transition-all duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:scale-105"
               title="Export"
             >
