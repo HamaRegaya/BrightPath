@@ -78,7 +78,7 @@ const AIAssistant: React.FC = () => {
   }
 
   return (
-    <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
+    <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50">
         <div className="flex items-center space-x-3">
@@ -176,14 +176,14 @@ const AIAssistant: React.FC = () => {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask for help with your homework..."
+              placeholder="Ask me for help..."
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none bg-white transition-all duration-200 min-h-[44px] max-h-[120px]"
               disabled={isLoading}
               rows={1}
             />
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-gray-500">
-                Press Enter to send, Shift+Enter for new line
+                Enter to send • Shift+Enter for new line
               </span>
               <span className="text-xs text-gray-400">
                 {inputMessage.length}/500
@@ -193,7 +193,7 @@ const AIAssistant: React.FC = () => {
           <button
             onClick={handleSendMessage}
             disabled={!inputMessage.trim() || isLoading}
-            className="self-end p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+            className="self-end p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl flex-shrink-0"
             title="Send message (Enter)"
           >
             <Send className="w-5 h-5" />
