@@ -376,10 +376,10 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       if (stroke.path.length === 0) return;
 
       if (stroke.tool === 'ai-text') {
-        // Render AI text
+        // Render AI text with Outfit font
         const text = (stroke as any).text || '';
         
-        ctx.font = '16px Arial';
+        ctx.font = '500 16px "Outfit", sans-serif';
         ctx.fillStyle = stroke.color;
         ctx.fillText(text, stroke.path[0].x, stroke.path[0].y);
       } else {
