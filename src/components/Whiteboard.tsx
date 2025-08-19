@@ -175,7 +175,8 @@ const Whiteboard: React.FC = () => {
   };
 
   const handleSparkleClick = (pointId: string) => {
-    generateAIText(pointId);
+    const canvas = canvasRef.current;
+    generateAIText(pointId, canvas || undefined);
   };
 
   const draw = (e: React.MouseEvent | React.TouchEvent) => {

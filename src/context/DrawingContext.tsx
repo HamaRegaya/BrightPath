@@ -43,13 +43,14 @@ interface DrawingContextType {
   setSessionTitle: (title: string) => void;
   aiAssistancePoints: AIAssistancePoint[];
   addAIAssistancePoint: (point: AIAssistancePoint) => void;
-  generateAIText: (pointId: string) => void;
+  generateAIText: (pointId: string, canvas?: HTMLCanvasElement) => void;
   removeAIText: (pointId: string) => void;
   toggleAIPointVisibility: (pointId: string) => void;
   selectedStrokeId: string | null;
   setSelectedStrokeId: (id: string | null) => void;
   findStrokeAt: (x: number, y: number) => Stroke | null;
   exportCanvas: (canvas: HTMLCanvasElement) => void;
+  getCanvasImage: (canvas: HTMLCanvasElement) => string;
 }
 
 const DrawingContext = createContext<DrawingContextType | undefined>(undefined);
@@ -232,48 +233,101 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     }
   };
 
+  const getCanvasImage = (canvas: HTMLCanvasElement): string => {
+    try {
+      // Create a temporary canvas with white background for better AI analysis
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      
+      if (!tempCtx) return '';
+      
+      // Set the same dimensions as the original canvas
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      
+      // Fill with white background
+      tempCtx.fillStyle = '#ffffff';
+      tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+      
+      // Draw the original canvas content on top
+      tempCtx.drawImage(canvas, 0, 0);
+      
+      // Return as base64 data URL
+      return tempCanvas.toDataURL('image/png');
+    } catch (error) {
+      console.error('Canvas image capture failed:', error);
+      return '';
+    }
+  };
+
   const addAIAssistancePoint = (point: AIAssistancePoint) => {
     setAIAssistancePoints(prev => [...prev, point]);
   };
 
-  const generateAIText = (pointId: string) => {
+  const generateAIText = async (pointId: string, canvas?: HTMLCanvasElement) => {
     const point = aiAssistancePoints.find(p => p.id === pointId);
     if (!point || point.hasGeneratedText) return;
 
-    // Generate AI assistance text based on current subject
-    const aiTexts = {
-      math: [
-        "x = -b ± √(b²-4ac) / 2a",
-        "Remember: PEMDAS order",
-        "Check your work!",
-        "Area = πr²",
-        "Slope = (y₂-y₁)/(x₂-x₁)"
-      ],
-      science: [
-        "H₂O → H₂ + ½O₂",
-        "F = ma (Newton's 2nd Law)",
-        "Speed = Distance/Time",
-        "Energy = mc²",
-        "Photosynthesis: 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂"
-      ],
-      language: [
-        "Subject + Verb + Object",
-        "Use commas in series",
-        "Check spelling!",
-        "Thesis → Body → Conclusion",
-        "Show, don't tell"
-      ],
-      general: [
-        "Great work!",
-        "Keep going!",
-        "Think step by step",
-        "Break it down",
-        "You're on the right track!"
-      ]
-    };
+    // Import the AI analysis service
+    const { analyzeBoard, analyzeBoardWithImage } = await import('../services/aiAnalysisService');
+    
+    let aiText: string;
+    
+    try {
+      // Try image analysis first if canvas is available
+      if (canvas && strokes.length > 3) {
+        const imageDataUrl = getCanvasImage(canvas);
+        if (imageDataUrl) {
+          console.log('Using AI image analysis for enhanced context');
+          aiText = await analyzeBoardWithImage(imageDataUrl, currentSubject);
+        } else {
+          // Fall back to text analysis
+          aiText = await analyzeBoard(strokes, currentSubject, sessionTitle);
+        }
+      } else {
+        // Use text-based analysis for fewer strokes or no canvas
+        aiText = await analyzeBoard(strokes, currentSubject, sessionTitle);
+      }
+    } catch (error) {
+      console.error('Dynamic AI analysis failed, using fallback:', error);
+      
+      // Fallback to context-aware static responses
+      const fallbackTexts = {
+        math: [
+          "Break it down step by step!",
+          "Check your calculations here.",
+          "What's the next operation?",
+          "Consider the order of operations.",
+          "Draw a diagram to visualize!"
+        ],
+        science: [
+          "What patterns do you see?",
+          "Test your hypothesis here.",
+          "Observe and record changes.",
+          "What causes this effect?",
+          "Connect to real-world examples!"
+        ],
+        language: [
+          "Expand your main idea.",
+          "Add supporting details here.",
+          "Consider your audience.",
+          "Organize your thoughts clearly.",
+          "Show, don't just tell!"
+        ],
+        general: [
+          "You're on the right track!",
+          "Keep building your solution.",
+          "What's your next step?",
+          "Trust your process!",
+          "Great progress so far!"
+        ]
+      };
+      
+      const subjectTexts = fallbackTexts[currentSubject as keyof typeof fallbackTexts] || fallbackTexts.general;
+      aiText = subjectTexts[Math.floor(Math.random() * subjectTexts.length)];
+    }
 
-    const subjectTexts = aiTexts[currentSubject as keyof typeof aiTexts] || aiTexts.general;
-    const randomText = subjectTexts[Math.floor(Math.random() * subjectTexts.length)];
+    const randomText = aiText;
     
     // Hide the sparkle and start typing effect
     setAIAssistancePoints(prev => 
@@ -650,7 +704,8 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     selectedStrokeId,
     setSelectedStrokeId,
     findStrokeAt,
-    exportCanvas
+    exportCanvas,
+    getCanvasImage
   };
 
   return (
