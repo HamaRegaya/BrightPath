@@ -80,6 +80,13 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
   const [typingIntervals, setTypingIntervals] = useState<Map<string, number>>(new Map());
   const [selectedStrokeId, setSelectedStrokeId] = useState<string | null>(null);
 
+  // Deselect shape when tool changes (unless switching to move tool)
+  useEffect(() => {
+    if (tool !== 'move' && selectedStrokeId) {
+      setSelectedStrokeId(null);
+    }
+  }, [tool, selectedStrokeId]);
+
   const addStroke = (stroke: Omit<Stroke, 'id'>) => {
     // Generate unique ID for the stroke
     const strokeWithId: Stroke = {
