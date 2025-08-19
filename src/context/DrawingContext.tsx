@@ -378,24 +378,10 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       if (stroke.tool === 'ai-text') {
         // Render AI text
         const text = (stroke as any).text || '';
-        const isTyping = (stroke as any).isTyping || false;
         
         ctx.font = '16px Arial';
         ctx.fillStyle = stroke.color;
         ctx.fillText(text, stroke.path[0].x, stroke.path[0].y);
-        
-        // Add blinking cursor if typing
-        if (isTyping) {
-          const textWidth = ctx.measureText(text).width;
-          const cursorX = stroke.path[0].x + textWidth;
-          const cursorY = stroke.path[0].y;
-          
-          // Simple blinking effect using timestamp
-          const shouldShowCursor = Math.floor(Date.now() / 500) % 2 === 0;
-          if (shouldShowCursor) {
-            ctx.fillText('|', cursorX, cursorY);
-          }
-        }
       } else {
         // Render normal strokes
         ctx.beginPath();

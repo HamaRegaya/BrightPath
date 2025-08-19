@@ -61,23 +61,6 @@ const Whiteboard: React.FC = () => {
     setAITextElements(aiTexts);
   }, [strokes]);
 
-  // Redraw canvas periodically when typing to show blinking cursor
-  useEffect(() => {
-    const hasTypingText = strokes.some(stroke => 
-      stroke.tool === 'ai-text' && (stroke as any).isTyping
-    );
-    
-    if (hasTypingText) {
-      const interval = setInterval(() => {
-        if (canvasRef.current) {
-          redrawCanvas(canvasRef.current);
-        }
-      }, 500); // Redraw every 500ms for cursor blinking
-      
-      return () => clearInterval(interval);
-    }
-  }, [strokes, redrawCanvas]);
-
   const getMousePos = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
