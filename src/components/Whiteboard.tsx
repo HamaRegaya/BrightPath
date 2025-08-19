@@ -19,6 +19,7 @@ const Whiteboard: React.FC = () => {
   } = useDrawing();
   
   const [currentPath, setCurrentPath] = useState<{ x: number; y: number }[]>([]);
+  const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
   const [aiTextElements, setAITextElements] = useState<Array<{
     id: string;
     position: { x: number; y: number };
@@ -83,17 +84,18 @@ const Whiteboard: React.FC = () => {
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     const pos = getMousePos(e);
     setIsDrawing(true);
-    setCurrentPath([pos]);
-
+    
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     if (tool === 'pen') {
+      setCurrentPath([pos]);
       ctx.beginPath();
       ctx.moveTo(pos.x, pos.y);
     } else if (tool === 'eraser') {
+      setCurrentPath([pos]);
       // Set up eraser context and start erasing
       ctx.globalCompositeOperation = 'destination-out';
       ctx.lineWidth = strokeWidth * 4; // Make eraser thicker
@@ -101,6 +103,27 @@ const Whiteboard: React.FC = () => {
       ctx.lineJoin = 'round';
       ctx.beginPath();
       ctx.moveTo(pos.x, pos.y);
+    } else if (tool === 'rectangle' || tool === 'circle') {
+      // For shapes, we just store the start position
+      setStartPos(pos);
+      setCurrentPath([pos]);
+    } else if (tool === 'text') {
+      // For text tool, immediately prompt for text
+      const text = prompt('Enter text:');
+      if (text) {
+        const textStroke = {
+          tool: 'text',
+          color: strokeColor,
+          width: strokeWidth,
+          path: [pos]
+        };
+        
+        // Add text property to the stroke
+        (textStroke as any).text = text;
+        
+        addStroke(textStroke);
+      }
+      setIsDrawing(false);
     }
   };
 
@@ -136,6 +159,38 @@ const Whiteboard: React.FC = () => {
       ctx.stroke();
       
       setCurrentPath(prev => [...prev, pos]);
+    } else if ((tool === 'rectangle' || tool === 'circle') && startPos) {
+      // Draw preview of shape while dragging
+      redrawCanvas(canvas); // Clear and redraw everything
+      
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = strokeWidth;
+      ctx.setLineDash([]);
+      
+      if (tool === 'rectangle') {
+        const width = pos.x - startPos.x;
+        const height = pos.y - startPos.y;
+        ctx.strokeRect(startPos.x, startPos.y, width, height);
+      } else if (tool === 'circle') {
+        // Calculate radius from start point to current position
+        const radius = Math.sqrt(Math.pow(pos.x - startPos.x, 2) + Math.pow(pos.y - startPos.y, 2));
+        
+        // Calculate direction vector from start to current position
+        const dx = pos.x - startPos.x;
+        const dy = pos.y - startPos.y;
+        
+        // Calculate circle center: start point + half the distance vector
+        const centerX = startPos.x + dx / 2;
+        const centerY = startPos.y + dy / 2;
+        
+        // Draw circle with center between start and current position
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius / 2, 0, 2 * Math.PI);
+        ctx.stroke();
+      }
+      
+      // Store current end position for final shape
+      setCurrentPath([startPos, pos]);
     }
   };
 
@@ -160,7 +215,9 @@ const Whiteboard: React.FC = () => {
       });
     }
     
+    // Reset shape-specific state
     setCurrentPath([]);
+    setStartPos(null);
   };
 
   return (
@@ -170,6 +227,8 @@ const Whiteboard: React.FC = () => {
         className={`w-full h-full ${
           tool === 'eraser' ? 'cursor-eraser' : 
           tool === 'pen' ? 'cursor-crosshair' : 
+          tool === 'rectangle' || tool === 'circle' ? 'cursor-crosshair' :
+          tool === 'text' ? 'cursor-text' :
           'cursor-default'
         }`}
         onMouseDown={startDrawing}

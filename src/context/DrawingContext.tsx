@@ -382,6 +382,13 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
         ctx.font = '500 16px "Outfit", sans-serif';
         ctx.fillStyle = stroke.color;
         ctx.fillText(text, stroke.path[0].x, stroke.path[0].y);
+      } else if (stroke.tool === 'text') {
+        // Render regular text
+        const text = (stroke as any).text || '';
+        
+        ctx.font = `${stroke.width * 4}px Arial`;
+        ctx.fillStyle = stroke.color;
+        ctx.fillText(text, stroke.path[0].x, stroke.path[0].y);
       } else if (stroke.tool === 'eraser') {
         // Render eraser strokes as continuous lines
         ctx.globalCompositeOperation = 'destination-out';
@@ -398,6 +405,45 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
         
         ctx.stroke();
         ctx.globalCompositeOperation = 'source-over';
+      } else if (stroke.tool === 'rectangle') {
+        // Render rectangle
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.width;
+        
+        if (stroke.path.length >= 2) {
+          const startPoint = stroke.path[0];
+          const endPoint = stroke.path[stroke.path.length - 1];
+          const width = endPoint.x - startPoint.x;
+          const height = endPoint.y - startPoint.y;
+          ctx.strokeRect(startPoint.x, startPoint.y, width, height);
+        }
+      } else if (stroke.tool === 'circle') {
+        // Render circle with the same logic as in Whiteboard.tsx
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.width;
+        
+        if (stroke.path.length >= 2) {
+          const startPoint = stroke.path[0];
+          const endPoint = stroke.path[stroke.path.length - 1];
+          
+          // Calculate radius from start point to end position
+          const radius = Math.sqrt(Math.pow(endPoint.x - startPoint.x, 2) + Math.pow(endPoint.y - startPoint.y, 2));
+          
+          // Calculate direction vector from start to end position
+          const dx = endPoint.x - startPoint.x;
+          const dy = endPoint.y - startPoint.y;
+          
+          // Calculate circle center: start point + half the distance vector
+          const centerX = startPoint.x + dx / 2;
+          const centerY = startPoint.y + dy / 2;
+          
+          // Draw circle with center between start and end position
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius / 2, 0, 2 * Math.PI);
+          ctx.stroke();
+        }
       } else {
         // Render normal pen strokes
         ctx.globalCompositeOperation = 'source-over';
