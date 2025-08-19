@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { MessageCircle, ChevronRight, ChevronLeft, Send, Lightbulb, BookOpen, Calculator } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { MessageCircle, ChevronRight, Send, BookOpen, Calculator, Sparkles, Brain } from 'lucide-react';
 import { useAI } from '../context/AIContext';
 import { useDrawing } from '../context/DrawingContext';
 
@@ -8,12 +8,28 @@ const AIAssistant: React.FC = () => {
   const { currentSubject } = useDrawing();
   const [isExpanded, setIsExpanded] = useState(true);
   const [inputMessage, setInputMessage] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
     
     await sendMessage(inputMessage, currentSubject);
     setInputMessage('');
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   const suggestionsBySubject = {
@@ -46,9 +62,16 @@ const AIAssistant: React.FC = () => {
       <div className="fixed right-4 top-1/2 transform -translate-y-1/2 z-10">
         <button
           onClick={() => setIsExpanded(true)}
-          className="bg-blue-600 text-white p-3 rounded-l-lg shadow-lg hover:bg-blue-700 transition-colors"
+          className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-4 rounded-l-2xl shadow-2xl hover:from-blue-700 hover:to-indigo-800 transition-all duration-300 group"
+          title="Open AI Tutor"
         >
-          <MessageCircle className="w-6 h-6" />
+          <div className="flex flex-col items-center space-y-2">
+            <MessageCircle className="w-6 h-6" />
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-xs font-medium">AI</span>
+            </div>
+          </div>
         </button>
       </div>
     );
@@ -57,27 +80,38 @@ const AIAssistant: React.FC = () => {
   return (
     <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-            <Lightbulb className="w-4 h-4 text-blue-600" />
+      <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Brain className="w-5 h-5 text-white" />
           </div>
-          <h3 className="font-semibold text-gray-900">AI Tutor</h3>
+          <div>
+            <h3 className="font-bold text-gray-900">AI Tutor</h3>
+            <p className="text-xs text-gray-600">Powered by BrightPath</p>
+          </div>
         </div>
         <button
           onClick={() => setIsExpanded(false)}
-          className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-white/50 rounded-lg transition-all"
+          title="Minimize"
         >
           <ChevronRight className="w-5 h-5" />
         </button>
       </div>
 
       {/* Subject Context */}
-      <div className="p-3 bg-blue-50 border-b border-gray-200">
-        <div className="flex items-center space-x-2 text-sm text-blue-700">
-          {currentSubject === 'math' && <Calculator className="w-4 h-4" />}
-          {currentSubject !== 'math' && <BookOpen className="w-4 h-4" />}
-          <span className="font-medium capitalize">{currentSubject} Mode</span>
+      <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-sm">
+            {currentSubject === 'math' && <Calculator className="w-4 h-4 text-blue-600" />}
+            {currentSubject === 'science' && <BookOpen className="w-4 h-4 text-green-600" />}
+            {currentSubject !== 'math' && currentSubject !== 'science' && <BookOpen className="w-4 h-4 text-purple-600" />}
+            <span className="font-semibold text-gray-700 capitalize">{currentSubject} Mode</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <Sparkles className="w-3 h-3 text-yellow-500" />
+            <span className="text-xs text-gray-600">Smart Help Active</span>
+          </div>
         </div>
       </div>
 
@@ -135,26 +169,48 @@ const AIAssistant: React.FC = () => {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-            placeholder="Ask for help with your homework..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            disabled={isLoading}
-          />
+      <div className="p-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex space-x-3">
+          <div className="flex-1">
+            <textarea
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask for help with your homework..."
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none bg-white transition-all duration-200 min-h-[44px] max-h-[120px]"
+              disabled={isLoading}
+              rows={1}
+            />
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-xs text-gray-500">
+                Press Enter to send, Shift+Enter for new line
+              </span>
+              <span className="text-xs text-gray-400">
+                {inputMessage.length}/500
+              </span>
+            </div>
+          </div>
           <button
             onClick={handleSendMessage}
             disabled={!inputMessage.trim() || isLoading}
-            className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="self-end p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+            title="Send message (Enter)"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-5 h-5" />
           </button>
         </div>
+        
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="flex items-center space-x-2 mt-3 text-blue-600">
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+            <span className="text-sm">AI is thinking...</span>
+          </div>
+        )}
       </div>
+
+      {/* Messages end reference */}
+      <div ref={messagesEndRef} />
     </div>
   );
 };

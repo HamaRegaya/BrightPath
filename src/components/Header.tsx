@@ -1,9 +1,40 @@
-import React from 'react';
-import { BookOpen, Save, Upload, Settings, HelpCircle, Calculator, Microscope, FileText, PenTool } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BookOpen, Save, Upload, Settings, HelpCircle, Calculator, Microscope, FileText, PenTool, Clock, Wifi } from 'lucide-react';
 import { useDrawing } from '../context/DrawingContext';
 
 const Header: React.FC = () => {
-  const { currentSubject, setCurrentSubject, sessionTitle, setSessionTitle } = useDrawing();
+  const { currentSubject, setCurrentSubject, sessionTitle, setSessionTitle, strokes } = useDrawing();
+  const [sessionTime, setSessionTime] = useState(0);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Session timer
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSessionTime(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Online status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
   
   const subjects = [
     { id: 'math', name: 'Mathematics', icon: Calculator, color: 'text-blue-600' },
@@ -44,6 +75,27 @@ const Header: React.FC = () => {
               placeholder="Enter session name..."
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 hover:bg-white min-w-[200px]"
             />
+          </div>
+
+          {/* Session Stats */}
+          <div className="flex items-center space-x-4 text-sm">
+            {/* Session Timer */}
+            <div className="flex items-center space-x-1 text-gray-600">
+              <Clock className="w-4 h-4" />
+              <span className="font-mono">{formatTime(sessionTime)}</span>
+            </div>
+            
+            {/* Stroke Count */}
+            <div className="flex items-center space-x-1 text-gray-600">
+              <span className="text-xs">Strokes:</span>
+              <span className="font-medium">{strokes.length}</span>
+            </div>
+
+            {/* Online Status */}
+            <div className={`flex items-center space-x-1 ${isOnline ? 'text-green-600' : 'text-red-500'}`}>
+              <Wifi className="w-4 h-4" />
+              <span className="text-xs font-medium">{isOnline ? 'Online' : 'Offline'}</span>
+            </div>
           </div>
         </div>
 
