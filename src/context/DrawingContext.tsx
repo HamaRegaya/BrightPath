@@ -382,8 +382,25 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
         ctx.font = '500 16px "Outfit", sans-serif';
         ctx.fillStyle = stroke.color;
         ctx.fillText(text, stroke.path[0].x, stroke.path[0].y);
+      } else if (stroke.tool === 'eraser') {
+        // Render eraser strokes as continuous lines
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.lineWidth = stroke.width * 4; // Make eraser thicker
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.moveTo(stroke.path[0].x, stroke.path[0].y);
+        
+        for (let i = 1; i < stroke.path.length; i++) {
+          ctx.lineTo(stroke.path[i].x, stroke.path[i].y);
+        }
+        
+        ctx.stroke();
+        ctx.globalCompositeOperation = 'source-over';
       } else {
-        // Render normal strokes
+        // Render normal pen strokes
+        ctx.globalCompositeOperation = 'source-over';
         ctx.beginPath();
         ctx.strokeStyle = stroke.color;
         ctx.lineWidth = stroke.width;

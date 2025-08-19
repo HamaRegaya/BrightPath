@@ -85,12 +85,20 @@ const Whiteboard: React.FC = () => {
     setIsDrawing(true);
     setCurrentPath([pos]);
 
-    if (tool === 'pen') {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
+    if (tool === 'pen') {
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    } else if (tool === 'eraser') {
+      // Set up eraser context and start erasing
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineWidth = strokeWidth * 4; // Make eraser thicker
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.beginPath();
       ctx.moveTo(pos.x, pos.y);
     }
@@ -119,17 +127,29 @@ const Whiteboard: React.FC = () => {
       
       setCurrentPath(prev => [...prev, pos]);
     } else if (tool === 'eraser') {
+      // Draw continuous erasing line
       ctx.globalCompositeOperation = 'destination-out';
-      ctx.beginPath();
-      ctx.arc(pos.x, pos.y, strokeWidth, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.globalCompositeOperation = 'source-over';
+      ctx.lineWidth = strokeWidth * 4; // Make eraser thicker
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+      
+      setCurrentPath(prev => [...prev, pos]);
     }
   };
 
   const stopDrawing = () => {
     if (!isDrawing) return;
     setIsDrawing(false);
+
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.globalCompositeOperation = 'source-over'; // Reset to normal drawing mode
+      }
+    }
 
     if (currentPath.length > 0) {
       addStroke({
@@ -147,7 +167,11 @@ const Whiteboard: React.FC = () => {
     <div className="flex-1 bg-white m-4 rounded-lg shadow-sm border border-gray-200 relative overflow-hidden">
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair"
+        className={`w-full h-full ${
+          tool === 'eraser' ? 'cursor-eraser' : 
+          tool === 'pen' ? 'cursor-crosshair' : 
+          'cursor-default'
+        }`}
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
