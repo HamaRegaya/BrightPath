@@ -26,7 +26,7 @@ const rateLimiter = new RateLimiter();
 // Initialize OpenAI client
 const client = new OpenAI({
   baseURL: 'https://api.aimlapi.com/v1',
-  apiKey: import.meta.env.VITE_AI_API_KEY, // Use existing environment variable
+  apiKey: import.meta.env.VITE_AI_API_KEY, // Do not prefix with "Bearer"
   dangerouslyAllowBrowser: true, // Allow browser usage for educational app
 });
 
@@ -123,19 +123,21 @@ Examples:
 Provide only the note, no additional explanation.`;
 
     const response = await client.chat.completions.create({
-      model: "gpt-4o-mini", // Using a more cost-effective model
+      model: 'openai/gpt-5-chat-latest',
       messages: [
         {
-          role: "system",
-          content: "You are a helpful tutoring assistant that provides concise, encouraging feedback to students."
+          role: 'system',
+          content: 'You are a helpful tutoring assistant that provides concise, encouraging feedback to students.'
         },
         {
-          role: "user",
+          role: 'user',
           content: prompt
         }
       ],
-      max_tokens: 30,
       temperature: 0.7,
+      top_p: 0.7,
+      frequency_penalty: 1,
+      max_tokens: 512,
     });
 
     return response.choices[0]?.message?.content?.trim() || "Keep going! You're doing great!";
@@ -211,17 +213,17 @@ export const analyzeBoardWithImage = async (
     }
 
     const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: 'openai/gpt-5-chat-latest',
       messages: [
         {
-          role: "user",
+          role: 'user',
           content: [
             {
-              type: "text",
+              type: 'text',
               text: `Analyze this student's whiteboard work in ${subject}. Provide a short, encouraging note (max 20 words) with a helpful hint or next step.`
             },
             {
-              type: "image_url",
+              type: 'image_url',
               image_url: {
                 url: imageDataUrl
               }
@@ -229,8 +231,10 @@ export const analyzeBoardWithImage = async (
           ]
         }
       ],
-      max_tokens: 30,
       temperature: 0.7,
+      top_p: 0.7,
+      frequency_penalty: 1,
+      max_tokens: 512,
     });
 
     return response.choices[0]?.message?.content?.trim() || "Keep going! You're doing great!";
