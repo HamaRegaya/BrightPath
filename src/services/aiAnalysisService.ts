@@ -109,15 +109,16 @@ Based on the student's current work, provide a short, encouraging note (1-2 sent
 3. Encourages them to continue
 
 The note should be:
-- Concise (maximum 20 words)
+- Very concise (maximum 15 words)
 - Encouraging and positive
 - Specific to their current work
 - Actionable
+- Easy to read on screen
 
 Examples:
-- "Great start! Try breaking this into smaller steps."
-- "You're on the right track! Consider checking your calculations."
-- "Nice work! What pattern do you notice here?"
+- "Great start! Try smaller steps."
+- "Good work! Check calculations."
+- "Nice! What pattern do you see?"
 
 Provide only the note, no additional explanation.`;
 
@@ -133,7 +134,7 @@ Provide only the note, no additional explanation.`;
           content: prompt
         }
       ],
-      max_tokens: 50,
+      max_tokens: 30,
       temperature: 0.7,
     });
 
@@ -158,37 +159,37 @@ const generateFallbackResponse = (strokes: Stroke[], subject: string): string =>
 
   // Dynamic responses based on board analysis
   if (strokeCount === 0) {
-    return "Ready to start? Begin with your first idea!";
+    return "Ready to start? Begin!";
   }
 
   if (strokeCount < 3) {
-    return "Good beginning! Keep building your solution.";
+    return "Good start! Keep going.";
   }
 
   if (hasText && hasShapes) {
-    return "Great organization! You're structuring well.";
+    return "Great organization!";
   }
 
   if (hasHandwriting && !hasText) {
-    return "Nice work! Consider adding labels for clarity.";
+    return "Nice work! Add labels?";
   }
 
   if (subject === 'math') {
     if (hasShapes) {
-      return "Diagrams help! Now check your calculations.";
+      return "Good diagrams! Check math.";
     }
-    return "Step by step! What's your next operation?";
+    return "Step by step works!";
   }
 
   if (subject === 'science') {
-    return "Good observations! What's the pattern here?";
+    return "Good observations!";
   }
 
   if (subject === 'language') {
-    return "Clear thinking! Expand on your main idea.";
+    return "Clear thinking! Expand more.";
   }
 
-  return "You're making progress! Trust your process.";
+  return "Making progress! Continue.";
 };
 
 /**
@@ -228,7 +229,7 @@ export const analyzeBoardWithImage = async (
           ]
         }
       ],
-      max_tokens: 50,
+      max_tokens: 30,
       temperature: 0.7,
     });
 

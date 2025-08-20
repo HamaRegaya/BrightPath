@@ -295,31 +295,31 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       const fallbackTexts = {
         math: [
           "Break it down step by step!",
-          "Check your calculations here.",
-          "What's the next operation?",
-          "Consider the order of operations.",
-          "Draw a diagram to visualize!"
+          "Check your work here.",
+          "What's next?",
+          "Good start! Keep going.",
+          "Try a diagram!"
         ],
         science: [
           "What patterns do you see?",
-          "Test your hypothesis here.",
-          "Observe and record changes.",
-          "What causes this effect?",
-          "Connect to real-world examples!"
+          "Test your idea here.",
+          "Observe and record.",
+          "What causes this?",
+          "Connect to real life!"
         ],
         language: [
           "Expand your main idea.",
-          "Add supporting details here.",
+          "Add details here.",
           "Consider your audience.",
-          "Organize your thoughts clearly.",
-          "Show, don't just tell!"
+          "Organize clearly.",
+          "Show, don't tell!"
         ],
         general: [
-          "You're on the right track!",
-          "Keep building your solution.",
-          "What's your next step?",
+          "You're on track!",
+          "Keep building.",
+          "What's next?",
           "Trust your process!",
-          "Great progress so far!"
+          "Great progress!"
         ]
       };
       
@@ -530,6 +530,38 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     }
   };
 
+  // Helper function to draw text with wrapping
+  const drawWrappedText = (
+    ctx: CanvasRenderingContext2D, 
+    text: string, 
+    x: number, 
+    y: number, 
+    maxWidth: number, 
+    lineHeight: number
+  ) => {
+    const words = text.split(' ');
+    let line = '';
+    let currentY = y;
+
+    for (let i = 0; i < words.length; i++) {
+      const testLine = line + words[i] + ' ';
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+
+      if (testWidth > maxWidth && i > 0) {
+        ctx.fillText(line, x, currentY);
+        line = words[i] + ' ';
+        currentY += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, x, currentY);
+    
+    // Return the total height used by the text
+    return currentY - y + lineHeight;
+  };
+
   const redrawCanvas = useCallback((canvas: HTMLCanvasElement) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -540,12 +572,15 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       if (stroke.path.length === 0) return;
 
       if (stroke.tool === 'ai-text') {
-        // Render AI text with Outfit font
+        // Render AI text with Outfit font and text wrapping
         const text = (stroke as any).text || '';
+        const maxWidth = canvas.width - stroke.path[0].x - 20; // Leave 20px margin from right edge
         
         ctx.font = '500 16px "Outfit", sans-serif';
         ctx.fillStyle = stroke.color;
-        ctx.fillText(text, stroke.path[0].x, stroke.path[0].y);
+        
+        // Draw text with wrapping
+        drawWrappedText(ctx, text, stroke.path[0].x, stroke.path[0].y, maxWidth, 20);
       } else if (stroke.tool === 'text') {
         // Render regular text
         const text = (stroke as any).text || '';

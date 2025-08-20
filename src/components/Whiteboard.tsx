@@ -31,6 +31,7 @@ const Whiteboard: React.FC = () => {
     position: { x: number; y: number };
     aiPointId: string;
     text: string;
+    dimensions: { width: number; height: number };
   }>>([]);
 
   useEffect(() => {
@@ -80,14 +81,62 @@ const Whiteboard: React.FC = () => {
 
   // Track AI text elements for showing remove buttons
   useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
     const aiTexts = strokes
       .filter(stroke => stroke.tool === 'ai-text')
-      .map(stroke => ({
-        id: stroke.id,
-        position: stroke.path[0],
-        aiPointId: (stroke as any).aiPointId || '',
-        text: (stroke as any).text || ''
-      }));
+      .map(stroke => {
+        const text = (stroke as any).text || '';
+        const position = stroke.path[0];
+        const maxWidth = canvas.width - position.x - 20; // Leave margin from right edge
+        
+        // Calculate dimensions inline to avoid dependency issues
+        const ctx = canvas.getContext('2d');
+        let dimensions = { width: 0, height: 0 };
+        
+        if (ctx) {
+          ctx.font = '500 16px "Outfit", sans-serif';
+          
+          const words = text.split(' ');
+          let line = '';
+          let lines = 0;
+          let maxLineWidth = 0;
+          const lineHeight = 20;
+
+          for (let i = 0; i < words.length; i++) {
+            const testLine = line + words[i] + ' ';
+            const metrics = ctx.measureText(testLine);
+            const testWidth = metrics.width;
+
+            if (testWidth > maxWidth && i > 0) {
+              maxLineWidth = Math.max(maxLineWidth, ctx.measureText(line).width);
+              line = words[i] + ' ';
+              lines++;
+            } else {
+              line = testLine;
+            }
+          }
+          
+          if (line.trim()) {
+            maxLineWidth = Math.max(maxLineWidth, ctx.measureText(line).width);
+            lines++;
+          }
+
+          dimensions = {
+            width: Math.min(maxLineWidth, maxWidth),
+            height: lines * lineHeight
+          };
+        }
+        
+        return {
+          id: stroke.id,
+          position,
+          aiPointId: (stroke as any).aiPointId || '',
+          text,
+          dimensions
+        };
+      });
     setAITextElements(aiTexts);
   }, [strokes]);
 
@@ -367,14 +416,14 @@ const Whiteboard: React.FC = () => {
         <button
           key={`remove-${aiText.id}`}
           onClick={() => removeAIText(aiText.aiPointId)}
-          className="absolute z-10 p-1 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all transform hover:scale-110"
+          className="absolute z-20 p-1 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all transform hover:scale-110 border-2 border-white"
           style={{
-            left: `${aiText.position.x + (aiText.text.length * 8) + 10}px`, // Position after the text
-            top: `${aiText.position.y - 20}px`, // Position above the text
+            left: `${aiText.position.x + aiText.dimensions.width + 8}px`, // Position 8px after the text width
+            top: `${aiText.position.y - 25}px`, // Position above the text
           }}
-          title="Remove AI text"
+          title="Remove AI suggestion"
         >
-          <X size={12} />
+          <X size={14} />
         </button>
       ))}
       
