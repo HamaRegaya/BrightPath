@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Save, Upload, Settings, HelpCircle, Calculator, Microscope, FileText, PenTool, Clock, Wifi } from 'lucide-react';
+import { BookOpen, Save, Upload, Settings, HelpCircle, Calculator, Microscope, FileText, PenTool, Clock, Wifi, Home } from 'lucide-react';
 import { useDrawing } from '../context/DrawingContext';
 
 const Header: React.FC = () => {
@@ -132,6 +132,13 @@ const Header: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-1">
+            <button 
+              onClick={() => window.location.href = '/'}
+              className="p-2.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group relative"
+              title="Home"
+            >
+              <Home className="w-5 h-5" />
+            </button>
             <button 
               className="p-2.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group relative"
               title="Save Session"

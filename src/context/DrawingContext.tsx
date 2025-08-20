@@ -572,11 +572,11 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       if (stroke.path.length === 0) return;
 
       if (stroke.tool === 'ai-text') {
-        // Render AI text with Outfit font and text wrapping
+        // Render AI text with Urbanist font and text wrapping
         const text = (stroke as any).text || '';
         const maxWidth = canvas.width - stroke.path[0].x - 20; // Leave 20px margin from right edge
         
-        ctx.font = '500 16px "Outfit", sans-serif';
+        ctx.font = '500 16px "Urbanist", sans-serif';
         ctx.fillStyle = stroke.color;
         
         // Draw text with wrapping

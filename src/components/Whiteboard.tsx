@@ -96,7 +96,7 @@ const Whiteboard: React.FC = () => {
         let dimensions = { width: 0, height: 0 };
         
         if (ctx) {
-          ctx.font = '500 16px "Outfit", sans-serif';
+          ctx.font = '500 16px "Urbanist", sans-serif';
           
           const words = text.split(' ');
           let line = '';
