@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Sparkles, X } from 'lucide-react';
 import { useDrawing } from '../context/DrawingContext';
+import MathText from './MathText';
 
 const Whiteboard: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -411,20 +412,30 @@ const Whiteboard: React.FC = () => {
         </button>
       ))}
 
-      {/* Remove buttons for AI-generated text */}
+      {/* AI Text with Math Rendering */}
       {aiTextElements.map((aiText) => (
-        <button
-          key={`remove-${aiText.id}`}
-          onClick={() => removeAIText(aiText.aiPointId)}
-          className="absolute z-20 p-1 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all transform hover:scale-110 border-2 border-white"
-          style={{
-            left: `${aiText.position.x + aiText.dimensions.width + 8}px`, // Position 8px after the text width
-            top: `${aiText.position.y - 25}px`, // Position above the text
-          }}
-          title="Remove AI suggestion"
-        >
-          <X size={14} />
-        </button>
+        <div key={`ai-text-container-${aiText.id}`} className="absolute" style={{
+          left: `${aiText.position.x}px`,
+          top: `${aiText.position.y}px`,
+        }}>
+          <MathText
+            text={aiText.text}
+            position={{ x: 0, y: 0 }} // Position relative to container
+            maxWidth={Math.min(400, canvasRef.current ? canvasRef.current.width - aiText.position.x - 20 : 400)}
+          />
+          {/* Remove button positioned at top-right corner of the note */}
+          <button
+            onClick={() => removeAIText(aiText.aiPointId)}
+            className="absolute z-30 p-1 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all transform hover:scale-110 border-2 border-white"
+            style={{
+              right: '-8px',
+              top: '-8px',
+            }}
+            title="Remove AI suggestion"
+          >
+            <X size={10} />
+          </button>
+        </div>
       ))}
       
       

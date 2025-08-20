@@ -78,62 +78,89 @@ const HomePage: React.FC = () => {
         </div>
       </nav>
 
-      {/* Hero Section with Animated Carousel */}
-      <section className="relative overflow-hidden min-h-screen">
+      {/* Hero Section with Optimized Layout */}
+      <section className="relative overflow-hidden">
         {/* Animated Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50 animate-pulse"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50"></div>
         
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-8 min-h-screen items-center">
+        {/* Decorative background elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 right-20 w-64 h-64 bg-blue-100 rounded-full opacity-20 animate-float"></div>
+          <div className="absolute bottom-32 left-16 w-48 h-48 bg-purple-100 rounded-full opacity-30 animate-float" style={{ animationDelay: '3s' }}></div>
+          <div className="absolute top-1/3 left-1/3 w-32 h-32 bg-green-100 rounded-full opacity-20 animate-pulse"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto relative z-10 px-4 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-12 lg:gap-8 min-h-screen items-center py-12 lg:py-0">
             {/* Left Content */}
-            <div className={`px-4 sm:px-6 lg:px-8 py-12 lg:py-0 transform transition-all duration-1000 ${
+            <div className={`lg:col-span-7 transform transition-all duration-1000 ${
               isVisible ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
             }`}>
-              <div className="text-center lg:text-left">
-                <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl">
+              <div className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
+                <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl lg:text-6xl leading-tight">
                   <span className="block animate-fade-in-up" style={{ animationDelay: '0.2s' }}>Learn with</span>
-                  <span className="block text-blue-600 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>AI-Powered</span>
+                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>AI-Powered</span>
                   <span className="block animate-fade-in-up" style={{ animationDelay: '0.6s' }}>Guidance</span>
                 </h1>
-                <p className={`mt-6 text-lg text-gray-500 sm:text-xl max-w-xl mx-auto lg:mx-0 transform transition-all duration-1000 delay-700 ${
+                <p className={`mt-6 text-lg text-gray-600 leading-relaxed transform transition-all duration-1000 delay-700 ${
                   isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
                 }`}>
                   Transform your learning experience with our intelligent whiteboard that provides real-time AI assistance, 
                   helping students excel in math, science, and language arts.
                 </p>
-                <div className={`mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start transform transition-all duration-1000 delay-1000 ${
+                <div className={`mt-10 flex flex-wrap gap-3 justify-center lg:justify-start transform transition-all duration-1000 delay-1000 ${
                   isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
                 }`}>
                   <button 
-                    onClick={() => window.location.href = '/whiteboard'}
-                    className="group relative px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 hover:bg-blue-700 overflow-hidden"
+                    onClick={() => window.location.href = '/dashboard'}
+                    className="group relative px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg font-medium text-base shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 hover:from-purple-700 hover:to-purple-800 overflow-hidden"
                   >
-                    <span className="relative z-10">Get Started</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <span className="relative z-10 flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      Dashboard
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                  </button>
+                  <button 
+                    onClick={() => window.location.href = '/whiteboard'}
+                    className="group relative px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium text-base shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 hover:from-blue-700 hover:to-blue-800 overflow-hidden"
+                  >
+                    <span className="relative z-10 flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                      Start Learning
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                   </button>
                   <a 
                     href="#features"
-                    className="group px-8 py-4 border-2 border-blue-600 text-blue-600 rounded-xl font-semibold text-lg hover:bg-blue-600 hover:text-white transform hover:scale-105 transition-all duration-300"
+                    className="group px-6 py-3 border-2 border-blue-600 text-blue-600 rounded-lg font-medium text-base hover:bg-blue-600 hover:text-white transform hover:scale-105 transition-all duration-300 hover:shadow-lg flex items-center gap-2"
                   >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                     Learn More
                   </a>
                 </div>
               </div>
             </div>
             
-            {/* Right Side - Animated Carousel */}
-            <div className={`relative h-96 lg:h-full min-h-[500px] transform transition-all duration-1000 delay-500 ${
+            {/* Right Side - Optimized Carousel */}
+            <div className={`lg:col-span-5 relative transform transition-all duration-1000 delay-500 ${
               isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
             }`}>
               {/* Carousel Container */}
-              <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl">
+              <div className="relative w-full h-80 lg:h-96 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300">
                 {carouselImages.map((image, index) => (
                   <div
                     key={index}
                     className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
                       index === currentImageIndex
                         ? 'opacity-100 scale-100'
-                        : 'opacity-0 scale-110'
+                        : 'opacity-0 scale-105'
                     }`}
                   >
                     <img
@@ -141,28 +168,34 @@ const HomePage: React.FC = () => {
                       alt={image.alt}
                       className="w-full h-full object-cover"
                     />
-                    {/* Overlay gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    {/* Subtle overlay gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-blue-500/10"></div>
                   </div>
                 ))}
                 
-                {/* Carousel Indicators */}
-                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                {/* Modern Carousel Indicators */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
                   {carouselImages.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
                         index === currentImageIndex
-                          ? 'bg-white scale-125'
-                          : 'bg-white/50 hover:bg-white/75'
+                          ? 'bg-white w-6'
+                          : 'bg-white/60 hover:bg-white/80'
                       }`}
                     />
                   ))}
                 </div>
+                
+                {/* Floating stats overlay */}
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-gray-700">Live AI Support</span>
+                  </div>
+                </div>
               </div>
-              
-              {/* Floating Animation Elements */}
             </div>
           </div>
         </div>
@@ -176,8 +209,15 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="features" className="py-20 bg-gradient-to-br from-gray-50 via-white to-blue-50 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-10 right-10 w-32 h-32 bg-blue-100 rounded-full opacity-20 animate-float"></div>
+          <div className="absolute bottom-20 left-10 w-24 h-24 bg-purple-100 rounded-full opacity-30 animate-float" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-green-100 rounded-full opacity-25 animate-pulse"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center">
             <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase animate-fade-in-up">Features</h2>
             <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl animate-fade-in-up animate-stagger-1">
@@ -188,64 +228,97 @@ const HomePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="mt-16">
-            <dl className="space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-16">
+          <div className="mt-20">
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-2">
+              {/* AI-Powered Assistance */}
               <div className="relative group animate-fade-in-up animate-stagger-3">
-                <dt>
-                  <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
+                <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 p-8 border border-gray-100 hover:border-blue-200">
+                  <div className="flex items-center space-x-6">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-20 w-20 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                        <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors mb-3">AI-Powered Assistance</h3>
+                      <p className="text-gray-600 group-hover:text-gray-700 transition-colors leading-relaxed">
+                        Get intelligent hints and suggestions tailored to your current work. Our AI analyzes your progress and provides contextual guidance.
+                      </p>
+                    </div>
                   </div>
-                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900 group-hover:text-blue-600 transition-colors">AI-Powered Assistance</p>
-                </dt>
-                <dd className="mt-2 ml-16 text-base text-gray-500 group-hover:text-gray-700 transition-colors">
-                  Get intelligent hints and suggestions tailored to your current work. Our AI analyzes your progress and provides contextual guidance.
-                </dd>
+                  {/* Decorative corner */}
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-blue-100 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
               </div>
 
+              {/* Interactive Whiteboard */}
               <div className="relative group animate-fade-in-up animate-stagger-4">
-                <dt>
-                  <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
+                <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 p-8 border border-gray-100 hover:border-green-200">
+                  <div className="flex items-center space-x-6">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-20 w-20 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                        <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-green-600 transition-colors mb-3">Interactive Whiteboard</h3>
+                      <p className="text-gray-600 group-hover:text-gray-700 transition-colors leading-relaxed">
+                        Draw, write, and create with our advanced digital whiteboard. Support for multiple tools including pen, shapes, and text.
+                      </p>
+                    </div>
                   </div>
-                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900 group-hover:text-green-600 transition-colors">Interactive Whiteboard</p>
-                </dt>
-                <dd className="mt-2 ml-16 text-base text-gray-500 group-hover:text-gray-700 transition-colors">
-                  Draw, write, and create with our advanced digital whiteboard. Support for multiple tools including pen, shapes, and text.
-                </dd>
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-green-100 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
               </div>
 
+              {/* Multiple Subjects */}
               <div className="relative group animate-fade-in-up animate-stagger-5">
-                <dt>
-                  <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
+                <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 p-8 border border-gray-100 hover:border-purple-200">
+                  <div className="flex items-center space-x-6">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-20 w-20 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                        <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-purple-600 transition-colors mb-3">Multiple Subjects</h3>
+                      <p className="text-gray-600 group-hover:text-gray-700 transition-colors leading-relaxed">
+                        Specialized support for mathematics, science, and language arts with subject-specific AI guidance and tools.
+                      </p>
+                    </div>
                   </div>
-                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900 group-hover:text-purple-600 transition-colors">Multiple Subjects</p>
-                </dt>
-                <dd className="mt-2 ml-16 text-base text-gray-500 group-hover:text-gray-700 transition-colors">
-                  Specialized support for mathematics, science, and language arts with subject-specific AI guidance and tools.
-                </dd>
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-purple-100 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
               </div>
 
-              <div className="relative group animate-fade-in-up animate-stagger-5">
-                <dt>
-                  <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
+              {/* Personalized Learning */}
+              <div className="relative group animate-fade-in-up animate-stagger-6">
+                <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 p-8 border border-gray-100 hover:border-pink-200">
+                  <div className="flex items-center space-x-6">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-20 w-20 rounded-2xl bg-gradient-to-br from-pink-500 to-red-500 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                        <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-pink-600 transition-colors mb-3">Personalized Learning</h3>
+                      <p className="text-gray-600 group-hover:text-gray-700 transition-colors leading-relaxed">
+                        Adaptive learning experience that adjusts to your pace and learning style for optimal educational outcomes.
+                      </p>
+                    </div>
                   </div>
-                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900 group-hover:text-pink-600 transition-colors">Personalized Learning</p>
-                </dt>
-                <dd className="mt-2 ml-16 text-base text-gray-500 group-hover:text-gray-700 transition-colors">
-                  Adaptive learning experience that adjusts to your pace and learning style for optimal educational outcomes.
-                </dd>
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-pink-100 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
               </div>
-            </dl>
+            </div>
           </div>
         </div>
       </section>
@@ -343,10 +416,19 @@ const HomePage: React.FC = () => {
           <div className="mt-8 flex flex-col sm:flex-row gap-4 lg:mt-0 lg:flex-shrink-0">
             <div className="animate-scale-in animate-stagger-2">
               <button 
+                onClick={() => window.location.href = '/dashboard'}
+                className="group relative overflow-hidden inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-purple-600 bg-white hover:bg-purple-50 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <span className="relative z-10">View Dashboard</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-50 to-pink-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </button>
+            </div>
+            <div className="animate-scale-in animate-stagger-2">
+              <button 
                 onClick={() => window.location.href = '/whiteboard'}
                 className="group relative overflow-hidden inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-blue-600 bg-white hover:bg-blue-50 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
-                <span className="relative z-10">Get started</span>
+                <span className="relative z-10">Start Learning</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
             </div>

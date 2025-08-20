@@ -49,6 +49,111 @@ html {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+/* Animation utilities */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 1s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 1s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 1s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.6s ease-out;
+}
+
+/* Staggered animation delays */
+.animate-stagger-1 {
+  animation-delay: 0.2s;
+  animation-fill-mode: both;
+}
+
+.animate-stagger-2 {
+  animation-delay: 0.4s;
+  animation-fill-mode: both;
+}
+
+.animate-stagger-3 {
+  animation-delay: 0.6s;
+  animation-fill-mode: both;
+}
+
+.animate-stagger-4 {
+  animation-delay: 0.8s;
+  animation-fill-mode: both;
+}
+
+.animate-stagger-5 {
+  animation-delay: 1.0s;
+  animation-fill-mode: both;
+}
+
+.animate-stagger-6 {
+  animation-delay: 1.2s;
+  animation-fill-mode: both;
+}
+
 /* Professional Animations */
 @keyframes fade-in-up {
   from {
@@ -155,6 +260,28 @@ html {
 
 .animate-glow {
   animation: glow 2s ease-in-out infinite;
+}
+
+/* Shine effect for buttons */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 120%;
+  height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 30%, rgba(255,255,255,0) 60%);
+  transform: skewX(-20deg);
+}
+.btn-shine:hover::after {
+  animation: shine-move 0.8s forwards;
+}
+@keyframes shine-move {
+  to { left: 150%; }
 }
 
 /* Staggered animations */

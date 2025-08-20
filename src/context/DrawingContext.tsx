@@ -530,38 +530,6 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     }
   };
 
-  // Helper function to draw text with wrapping
-  const drawWrappedText = (
-    ctx: CanvasRenderingContext2D, 
-    text: string, 
-    x: number, 
-    y: number, 
-    maxWidth: number, 
-    lineHeight: number
-  ) => {
-    const words = text.split(' ');
-    let line = '';
-    let currentY = y;
-
-    for (let i = 0; i < words.length; i++) {
-      const testLine = line + words[i] + ' ';
-      const metrics = ctx.measureText(testLine);
-      const testWidth = metrics.width;
-
-      if (testWidth > maxWidth && i > 0) {
-        ctx.fillText(line, x, currentY);
-        line = words[i] + ' ';
-        currentY += lineHeight;
-      } else {
-        line = testLine;
-      }
-    }
-    ctx.fillText(line, x, currentY);
-    
-    // Return the total height used by the text
-    return currentY - y + lineHeight;
-  };
-
   const redrawCanvas = useCallback((canvas: HTMLCanvasElement) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -572,15 +540,8 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       if (stroke.path.length === 0) return;
 
       if (stroke.tool === 'ai-text') {
-        // Render AI text with Urbanist font and text wrapping
-        const text = (stroke as any).text || '';
-        const maxWidth = canvas.width - stroke.path[0].x - 20; // Leave 20px margin from right edge
-        
-        ctx.font = '500 16px "Urbanist", sans-serif';
-        ctx.fillStyle = stroke.color;
-        
-        // Draw text with wrapping
-        drawWrappedText(ctx, text, stroke.path[0].x, stroke.path[0].y, maxWidth, 20);
+        // AI text is now rendered as React components, so we skip canvas rendering
+        return;
       } else if (stroke.tool === 'text') {
         // Render regular text
         const text = (stroke as any).text || '';
