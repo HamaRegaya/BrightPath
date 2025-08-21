@@ -11,7 +11,8 @@ import {
   AIAssistancePoints, 
   AITextDisplay, 
   GridOverlay, 
-  WhiteboardCanvas 
+  WhiteboardCanvas,
+  AILoadingOverlay
 } from './whiteboard/index';
 
 const Whiteboard: React.FC = () => {
@@ -140,6 +141,12 @@ const Whiteboard: React.FC = () => {
 
   return (
   <div className="flex-1 min-h-0 flex bg-white mx-3 my-1 md:mx-4 md:my-2 rounded-lg shadow-sm border border-gray-200 relative overflow-hidden">
+      {/* Animated gradient + sparkles while AI is typing */}
+      <AILoadingOverlay
+        active={aiAssistancePoints.some(p => p.isLoading || p.isTyping)}
+        anchors={aiAssistancePoints.filter(p => p.isLoading || p.isTyping).map(p => p.position)}
+        duration={14000}
+      />
       <WhiteboardCanvas
         canvasRef={canvasRef}
         tool={tool}

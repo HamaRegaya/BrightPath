@@ -17,6 +17,7 @@ export interface AIAssistancePoint {
   position: { x: number; y: number };
   strokeId: string;
   isVisible: boolean;
+  isLoading: boolean;
   hasGeneratedText: boolean;
   isTyping: boolean;
   fullText: string;
@@ -128,6 +129,7 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
           position: { x: lastPoint.x + 20, y: lastPoint.y - 10 },
           strokeId: strokeWithId.id,
           isVisible: true,
+          isLoading: false,
           hasGeneratedText: false,
           isTyping: false,
           fullText: '',
@@ -283,12 +285,17 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     const point = aiAssistancePoints.find(p => p.id === pointId);
     if (!point || point.hasGeneratedText) return;
 
+    // Mark as loading and hide sparkle to prevent re-clicks
+    setAIAssistancePoints(prev => 
+      prev.map(p => p.id === pointId ? { ...p, isLoading: true, isVisible: false } : p)
+    );
+
     // Import the AI analysis service
     const { analyzeBoard, analyzeBoardWithImage } = await import('../services/aiAnalysisService');
     
     let aiText: string;
     
-    try {
+  try {
       // Try image analysis first if canvas is available
       if (canvas && strokes.length > 3) {
         const imageDataUrl = getCanvasImage(canvas);
@@ -342,14 +349,15 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       aiText = subjectTexts[Math.floor(Math.random() * subjectTexts.length)];
     }
 
-    const randomText = aiText;
+  const randomText = aiText;
     
-    // Hide the sparkle and start typing effect
+  // Switch from loading to typing
     setAIAssistancePoints(prev => 
       prev.map(p => 
         p.id === pointId ? { 
-          ...p, 
-          isVisible: false, 
+      ...p,
+      isLoading: false,
+      isVisible: false, 
           isTyping: true, 
           fullText: randomText,
           currentText: ''
@@ -475,13 +483,14 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       return filteredStrokes;
     });
 
-    // Show the sparkle again and reset typing state
+  // Show the sparkle again and reset typing/loading state
     setAIAssistancePoints(prev => 
       prev.map(p => 
         p.id === pointId ? { 
           ...p, 
           hasGeneratedText: false, 
-          isVisible: true, 
+      isVisible: true, 
+      isLoading: false,
           isTyping: false,
           fullText: '',
           currentText: ''

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AuroraBackground } from './ui/aurora-background';
 
 const HomePage: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -78,18 +79,8 @@ const HomePage: React.FC = () => {
         </div>
       </nav>
 
-      {/* Hero Section with Optimized Layout */}
-      <section className="relative overflow-hidden">
-        {/* Animated Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50"></div>
-        
-        {/* Decorative background elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 right-20 w-64 h-64 bg-blue-100 rounded-full opacity-20 animate-float"></div>
-          <div className="absolute bottom-32 left-16 w-48 h-48 bg-purple-100 rounded-full opacity-30 animate-float" style={{ animationDelay: '3s' }}></div>
-          <div className="absolute top-1/3 left-1/3 w-32 h-32 bg-green-100 rounded-full opacity-20 animate-pulse"></div>
-        </div>
-        
+      {/* Hero Section with Aurora Background */}
+      <AuroraBackground className="relative overflow-hidden min-h-screen">
         <div className="max-w-7xl mx-auto relative z-10 px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-12 lg:gap-8 min-h-screen items-center py-12 lg:py-0">
             {/* Left Content */}
@@ -206,7 +197,7 @@ const HomePage: React.FC = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </div>
-      </section>
+      </AuroraBackground>
 
       {/* Features Section */}
       <section id="features" className="py-20 bg-gradient-to-br from-gray-50 via-white to-blue-50 relative overflow-hidden">
