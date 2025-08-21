@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, ChevronRight, Send, BookOpen, Calculator, Sparkles, Brain } from 'lucide-react';
 import { useAI } from '../context/AIContext';
 import { useDrawing } from '../context/DrawingContext';
+import ChatMathText from './ChatMathText';
 
 const AIAssistant: React.FC = () => {
   const { messages, sendMessage, isLoading } = useAI();
@@ -149,7 +150,11 @@ const AIAssistant: React.FC = () => {
                     : 'bg-gray-100 text-gray-900'
                 }`}
               >
-                {message.text}
+                {message.sender === 'ai' ? (
+                  <ChatMathText text={message.text} />
+                ) : (
+                  message.text
+                )}
               </div>
             </div>
           ))

@@ -37,6 +37,53 @@ export interface BoardAnalysis {
   nextSteps: string[];
 }
 
+export type ChatRole = 'system' | 'user' | 'assistant';
+export interface ChatMessage {
+  role: ChatRole;
+  content: string;
+}
+
+/**
+ * Unified GPT-5 chat helper for the AI tutor
+ */
+export const chatWithTutor = async (
+  history: ChatMessage[],
+  subject: string
+): Promise<string> => {
+  try {
+    if (!rateLimiter.canMakeCall()) {
+      throw new Error('Rate limit exceeded. Please wait before requesting more AI assistance.');
+    }
+    if (!import.meta.env.VITE_AI_API_KEY || import.meta.env.VITE_AI_API_KEY === 'your-api-key-here') {
+      throw new Error('AI API key not configured');
+    }
+
+    const systemPrompt: ChatMessage = {
+      role: 'system',
+      content: `You are BrightPath, a concise, encouraging AI tutor for ${subject}. Keep messages under 40 words, be specific, positive, and actionable.`
+    };
+
+    const messages: ChatMessage[] = [systemPrompt, ...history];
+
+    const response = await client.chat.completions.create({
+      model: 'openai/gpt-5-chat-latest',
+      messages: messages as any,
+      temperature: 0.7,
+      top_p: 0.7,
+      frequency_penalty: 0.3,
+      max_tokens: 180,
+    });
+
+    return response.choices[0]?.message?.content?.trim() || "I'm here to help. What part is most confusing?";
+  } catch (err) {
+    console.error('Tutor chat error:', err);
+    // Fallback to a compact context-aware message
+    return subject === 'math'
+      ? 'Try breaking it into smaller steps and check each result.'
+      : 'Good question! Summarize what you know, then we’ll tackle the gap.';
+  }
+};
+
 /**
  * Converts canvas strokes to a text description for AI analysis
  */
