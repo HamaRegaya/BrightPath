@@ -1,5 +1,6 @@
 import { Position } from '../../types/whiteboard';
 import { useDrawing } from '../../context/DrawingContext';
+import { useEffect } from 'react';
 import { 
   getMousePosition, 
   configureDrawingStyle, 
@@ -40,6 +41,14 @@ export const useDrawingLogic = (
     setSelectedStrokeId,
     findStrokeAt
   } = useDrawing();
+
+  // Clear any JavaScript cursor styles when tool changes to let CSS cursor classes take effect
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (canvas && tool !== 'move') {
+      canvas.style.cursor = '';
+    }
+  }, [tool, canvasRef]);
 
   // Helpers for image handle hover and cursor mapping
   const getImageHandleAt = (stroke: any, pos: Position, handleSize = 10): null | string => {
