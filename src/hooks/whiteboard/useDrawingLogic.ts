@@ -41,6 +41,46 @@ export const useDrawingLogic = (
     findStrokeAt
   } = useDrawing();
 
+  // Helpers for image handle hover and cursor mapping
+  const getImageHandleAt = (stroke: any, pos: Position, handleSize = 10): null | string => {
+    if (!stroke || stroke.tool !== 'image' || !stroke.path?.length) return null;
+    const topLeft = stroke.path[0];
+    const w = stroke.imgWidth || 0;
+    const h = stroke.imgHeight || 0;
+    const handles = [
+      { k: 'nw', x: topLeft.x, y: topLeft.y },
+      { k: 'n',  x: topLeft.x + w / 2, y: topLeft.y },
+      { k: 'ne', x: topLeft.x + w, y: topLeft.y },
+      { k: 'e',  x: topLeft.x + w, y: topLeft.y + h / 2 },
+      { k: 'se', x: topLeft.x + w, y: topLeft.y + h },
+      { k: 's',  x: topLeft.x + w / 2, y: topLeft.y + h },
+      { k: 'sw', x: topLeft.x, y: topLeft.y + h },
+      { k: 'w',  x: topLeft.x, y: topLeft.y + h / 2 }
+    ];
+    const tol = handleSize;
+    const hit = handles.find(h => Math.abs(pos.x - h.x) <= tol && Math.abs(pos.y - h.y) <= tol);
+    return hit ? hit.k : null;
+  };
+
+  const handleToCursor = (handle: string): string => {
+    switch (handle) {
+      case 'n':
+      case 's':
+        return 'ns-resize';
+      case 'e':
+      case 'w':
+        return 'ew-resize';
+      case 'ne':
+      case 'sw':
+        return 'nesw-resize';
+      case 'nw':
+      case 'se':
+        return 'nwse-resize';
+      default:
+        return 'move';
+    }
+  };
+
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -72,12 +112,37 @@ export const useDrawingLogic = (
   };
 
   const draw = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDrawing) return;
-    
     const canvas = canvasRef.current;
     if (!canvas) return;
     
     const pos = getMousePosition(e, canvas);
+    // Hover cursor feedback for move tool
+    if (tool === 'move') {
+      let hoverCursor = 'move';
+      let imageStroke: any = null;
+      const selected = selectedStrokeId ? strokes.find(s => s.id === selectedStrokeId) : null;
+      if (selected && selected.tool === 'image') imageStroke = selected as any;
+      if (!imageStroke) {
+        const hit = findStrokeAt(pos.x, pos.y);
+        if (hit && hit.tool === 'image') imageStroke = hit as any;
+      }
+      if (imageStroke) {
+        const handle = getImageHandleAt(imageStroke, pos);
+        if (handle) {
+          hoverCursor = handleToCursor(handle);
+        } else {
+          const tl = imageStroke.path[0];
+          const w = imageStroke.imgWidth || 0;
+          const h = imageStroke.imgHeight || 0;
+          if (pos.x >= tl.x && pos.x <= tl.x + w && pos.y >= tl.y && pos.y <= tl.y + h) {
+            hoverCursor = isDrawing ? 'grabbing' : 'grab';
+          }
+        }
+      }
+      (canvas.style as any).cursor = hoverCursor;
+    }
+
+    if (!isDrawing) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -112,6 +177,9 @@ export const useDrawingLogic = (
 
     if (tool === 'move') {
       setDragOffset(null);
+      // keep a neutral move cursor after finishing
+      const canvas = canvasRef.current;
+      if (canvas) (canvas.style as any).cursor = 'move';
       return;
     }
 
