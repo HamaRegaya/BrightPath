@@ -133,6 +133,29 @@ export const useDrawingLogic = (
     const clickedStroke = findStrokeAt(pos.x, pos.y);
     if (clickedStroke) {
       setSelectedStrokeId(clickedStroke.id);
+      // For images, detect if a resize handle is clicked
+      if (clickedStroke.tool === 'image') {
+        const topLeft = clickedStroke.path[0];
+        const w = (clickedStroke as any).imgWidth || 0;
+        const h = (clickedStroke as any).imgHeight || 0;
+        const handleSize = 10;
+        const handles = [
+          { k: 'nw', x: topLeft.x, y: topLeft.y },
+          { k: 'n',  x: topLeft.x + w / 2, y: topLeft.y },
+          { k: 'ne', x: topLeft.x + w, y: topLeft.y },
+          { k: 'e',  x: topLeft.x + w, y: topLeft.y + h / 2 },
+          { k: 'se', x: topLeft.x + w, y: topLeft.y + h },
+          { k: 's',  x: topLeft.x + w / 2, y: topLeft.y + h },
+          { k: 'sw', x: topLeft.x, y: topLeft.y + h },
+          { k: 'w',  x: topLeft.x, y: topLeft.y + h / 2 }
+        ];
+        const hit = handles.find(h => Math.abs(pos.x - h.x) <= handleSize && Math.abs(pos.y - h.y) <= handleSize);
+        if (hit) {
+          // Store handle key in dragOffset.x using NaN packing is messy; instead, extend via any
+          (setDragOffset as any)({ x: pos.x - topLeft.x, y: pos.y - topLeft.y, handle: hit.k, base: { x: topLeft.x, y: topLeft.y, w, h, startX: pos.x, startY: pos.y } });
+          return;
+        }
+      }
       const startPoint = clickedStroke.path[0];
       setDragOffset(calculateDragOffset(pos, startPoint));
     } else {
@@ -180,11 +203,39 @@ export const useDrawingLogic = (
     if (selectedStrokeId && dragOffset) {
       const selectedStroke = strokes.find(s => s.id === selectedStrokeId);
       if (selectedStroke) {
+        // If resizing an image
+        const anyOffset: any = dragOffset as any;
+        if (selectedStroke.tool === 'image' && anyOffset.handle) {
+          const base = anyOffset.base;
+          let newW = base.w;
+          let newH = base.h;
+          let newX = base.x;
+          let newY = base.y;
+          const dx = pos.x - base.startX;
+          const dy = pos.y - base.startY;
+          switch (anyOffset.handle) {
+            case 'se': newW = Math.max(10, base.w + dx); newH = Math.max(10, base.h + dy); break;
+            case 'e':  newW = Math.max(10, base.w + dx); break;
+            case 's':  newH = Math.max(10, base.h + dy); break;
+            case 'nw': newX = base.x + dx; newY = base.y + dy; newW = Math.max(10, base.w - dx); newH = Math.max(10, base.h - dy); break;
+            case 'ne': newY = base.y + dy; newW = Math.max(10, base.w + dx); newH = Math.max(10, base.h - dy); break;
+            case 'sw': newX = base.x + dx; newW = Math.max(10, base.w - dx); newH = Math.max(10, base.h + dy); break;
+            case 'n':  newY = base.y + dy; newH = Math.max(10, base.h - dy); break;
+            case 'w':  newX = base.x + dx; newW = Math.max(10, base.w - dx); break;
+          }
+          // Keep aspect ratio if Shift is held
+          if ((window as any).__shiftKey) {
+            const ratio = base.w / base.h || 1;
+            if (newW / newH > ratio) newW = Math.round(newH * ratio); else newH = Math.round(newW / ratio);
+          }
+          updateStroke(selectedStrokeId, { path: [{ x: newX, y: newY }], imgWidth: newW as any, imgHeight: newH as any } as any);
+          return;
+        }
+        // Otherwise, drag the shape normally
         const newStartPos = calculateNewPosition(pos, dragOffset);
         const oldStartPos = selectedStroke.path[0];
         const delta = calculateMovementDelta(oldStartPos, newStartPos);
         const newPath = applyMovementToPath(selectedStroke.path, delta);
-        
         updateStroke(selectedStrokeId, { path: newPath });
       }
     }

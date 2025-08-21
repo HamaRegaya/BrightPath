@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pen, Eraser, Square, Circle, Type, Undo, Redo, Trash2, Download, Move } from 'lucide-react';
+import { Pen, Eraser, Square, Circle, Type, Undo, Redo, Trash2, Download, Move, Image as ImageIcon } from 'lucide-react';
 import { useDrawing } from '../context/DrawingContext';
 
 const Toolbar: React.FC = () => {
@@ -57,6 +57,35 @@ const Toolbar: React.FC = () => {
     } else {
       alert('Aucun dessin à exporter. Veuillez d\'abord dessiner quelque chose.');
     }
+  };
+
+  const handleInsertImage = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async () => {
+      const file = input.files?.[1] ? input.files?.[0] : input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const imageSrc = reader.result as string;
+        const canvas = document.querySelector('canvas') as HTMLCanvasElement | null;
+        const rect = canvas?.getBoundingClientRect();
+        const x = rect ? rect.width / 2 - 100 : 100;
+        const y = rect ? rect.height / 2 - 75 : 100;
+        const img = new Image();
+        img.onload = () => {
+          const maxW = rect ? rect.width * 0.4 : 400;
+          const scale = Math.min(1, maxW / img.width);
+          const w = Math.round(img.width * scale);
+          const h = Math.round(img.height * scale);
+          (window as any).__drawing_addImage__?.({ imageSrc, x, y, w, h });
+        };
+        img.src = imageSrc;
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
   };
 
   return (
@@ -182,6 +211,13 @@ const Toolbar: React.FC = () => {
             Actions
           </div>
           <div className="flex flex-col space-y-2">
+            <button
+              onClick={handleInsertImage}
+              className="p-3 rounded-xl transition-all duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:scale-105"
+              title="Insert Image"
+            >
+              <ImageIcon className="w-5 h-5" />
+            </button>
             <button
               onClick={undo}
               disabled={!canUndo}

@@ -21,7 +21,8 @@ const Whiteboard: React.FC = () => {
     redrawCanvas,
     aiAssistancePoints,
     generateAIText,
-    removeAIText
+  removeAIText,
+  addStroke
   } = useDrawing();
   
   // Hooks personnalisés pour la logique modulaire
@@ -54,6 +55,25 @@ const Whiteboard: React.FC = () => {
     generateAIText(pointId, canvas || undefined);
   };
 
+  // Expose a minimal global hook for toolbar image insertion
+  useEffect(() => {
+    (window as any).__drawing_addImage__ = ({ imageSrc, x, y, w, h }: { imageSrc: string; x: number; y: number; w: number; h: number; }) => {
+      addStroke({
+        tool: 'image',
+        color: '#000000',
+        width: 1,
+        path: [{ x, y }],
+        imageSrc,
+        imgWidth: w,
+        imgHeight: h
+      } as any);
+      if (canvasRef.current) redrawCanvas(canvasRef.current);
+    };
+    return () => {
+      if ((window as any).__drawing_addImage__) delete (window as any).__drawing_addImage__;
+    };
+  }, [addStroke, redrawCanvas]);
+
   // Gestionnaires d'événements tactiles
   const handleTouchStart = (e: React.TouchEvent) => {
     e.preventDefault();
@@ -70,8 +90,56 @@ const Whiteboard: React.FC = () => {
     stopDrawing();
   };
 
+  // Global paste handler so Ctrl+V works anywhere on the site
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.startsWith('image/')) {
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+          e.preventDefault();
+          const file = item.getAsFile();
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            const imageSrc = reader.result as string;
+            const rect = canvas.getBoundingClientRect();
+            // Default to center of canvas
+            const x = rect.width / 2 - 100;
+            const y = rect.height / 2 - 75;
+            const img = new Image();
+            img.onload = () => {
+              const maxW = rect.width * 0.4;
+              const scale = Math.min(1, maxW / img.width);
+              const w = Math.round(img.width * scale);
+              const h = Math.round(img.height * scale);
+              addStroke({
+                tool: 'image',
+                color: '#000000',
+                width: 1,
+                path: [{ x, y }],
+                imageSrc,
+                imgWidth: w,
+                imgHeight: h
+              } as any);
+              redrawCanvas(canvas);
+            };
+            img.src = imageSrc;
+          };
+          reader.readAsDataURL(file);
+          break;
+        }
+      }
+    };
+    window.addEventListener('paste', onPaste);
+    return () => window.removeEventListener('paste', onPaste);
+  }, [canvasRef, addStroke, redrawCanvas]);
+
   return (
-    <div className="flex-1 min-h-0 flex bg-white mx-3 my-1 md:mx-4 md:my-2 rounded-lg shadow-sm border border-gray-200 relative overflow-hidden">
+  <div className="flex-1 min-h-0 flex bg-white mx-3 my-1 md:mx-4 md:my-2 rounded-lg shadow-sm border border-gray-200 relative overflow-hidden">
       <WhiteboardCanvas
         canvasRef={canvasRef}
         tool={tool}

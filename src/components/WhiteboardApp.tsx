@@ -10,6 +10,7 @@ function WhiteboardApp() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+  (window as any).__shiftKey = e.shiftKey;
       // Prevent default browser shortcuts that might interfere
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {

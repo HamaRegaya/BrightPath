@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useRef } from 'react';
 
 export interface Stroke {
   tool: string;
@@ -6,6 +6,10 @@ export interface Stroke {
   width: number;
   path: { x: number; y: number }[];
   id: string;
+  // Optional fields for image strokes
+  imageSrc?: string;
+  imgWidth?: number;
+  imgHeight?: number;
 }
 
 export interface AIAssistancePoint {
@@ -83,6 +87,8 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
   const [sparkleTimeout, setSparkleTimeout] = useState<number | null>(null);
   const [typingIntervals, setTypingIntervals] = useState<Map<string, number>>(new Map());
   const [selectedStrokeId, setSelectedStrokeId] = useState<string | null>(null);
+  // Cache loaded images by stroke id to avoid reloading on each redraw
+  const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
 
   // Deselect shape when tool changes (unless switching to move tool)
   useEffect(() => {
@@ -177,7 +183,7 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
             return stroke;
           }
         }
-      } else if (stroke.tool === 'text' || stroke.tool === 'ai-text') {
+  } else if (stroke.tool === 'text' || stroke.tool === 'ai-text') {
         // Simple bounding box check for text
         const textPoint = stroke.path[0];
         const text = (stroke as any).text || '';
@@ -186,6 +192,16 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
         
         if (x >= textPoint.x && x <= textPoint.x + textWidth && 
             y >= textPoint.y - fontSize && y <= textPoint.y) {
+          return stroke;
+        }
+      } else if (stroke.tool === 'image') {
+        const topLeft = stroke.path[0];
+        const w = (stroke as any).imgWidth || 0;
+        const h = (stroke as any).imgHeight || 0;
+        if (
+          x >= topLeft.x && x <= topLeft.x + w &&
+          y >= topLeft.y && y <= topLeft.y + h
+        ) {
           return stroke;
         }
       }
@@ -541,6 +557,30 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       if (stroke.tool === 'ai-text') {
         // AI text is now rendered as React components, so we skip canvas rendering
         return;
+      } else if (stroke.tool === 'image') {
+        // Draw image strokes
+        const imgId = stroke.id;
+        const cached = imageCacheRef.current.get(imgId);
+        const drawIt = (img: HTMLImageElement) => {
+          const topLeft = stroke.path[0];
+          const w = (stroke as any).imgWidth || img.width;
+          const h = (stroke as any).imgHeight || img.height;
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.drawImage(img, topLeft.x, topLeft.y, w, h);
+        };
+        if (cached) {
+          drawIt(cached);
+        } else if ((stroke as any).imageSrc) {
+          const img = new Image();
+          img.onload = () => {
+            imageCacheRef.current.set(imgId, img);
+            drawIt(img);
+            // Trigger a re-render pass to ensure proper layering after load
+            requestAnimationFrame(() => redrawCanvas(canvas));
+          };
+          img.src = (stroke as any).imageSrc as string;
+        }
+        return;
       } else if (stroke.tool === 'text') {
         // Render regular text
         const text = (stroke as any).text || '';
@@ -649,6 +689,32 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
           ctx.beginPath();
           ctx.arc(centerX, centerY, radius + 5, 0, 2 * Math.PI);
           ctx.stroke();
+        } else if (selectedStroke.tool === 'image') {
+          const topLeft = selectedStroke.path[0];
+          const w = (selectedStroke as any).imgWidth || 0;
+          const h = (selectedStroke as any).imgHeight || 0;
+          // Outline
+          ctx.strokeRect(topLeft.x - 5, topLeft.y - 5, w + 10, h + 10);
+          // Resize handles (8 points)
+          const handleSize = 8;
+          const half = handleSize / 2;
+          const points = [
+            { x: topLeft.x, y: topLeft.y },                       // nw
+            { x: topLeft.x + w / 2, y: topLeft.y },               // n
+            { x: topLeft.x + w, y: topLeft.y },                   // ne
+            { x: topLeft.x + w, y: topLeft.y + h / 2 },           // e
+            { x: topLeft.x + w, y: topLeft.y + h },               // se
+            { x: topLeft.x + w / 2, y: topLeft.y + h },           // s
+            { x: topLeft.x, y: topLeft.y + h },                   // sw
+            { x: topLeft.x, y: topLeft.y + h / 2 }                // w
+          ];
+          ctx.setLineDash([]);
+          ctx.fillStyle = '#ffffff';
+          ctx.strokeStyle = '#3b82f6';
+          points.forEach(p => {
+            ctx.fillRect(p.x - half, p.y - half, handleSize, handleSize);
+            ctx.strokeRect(p.x - half, p.y - half, handleSize, handleSize);
+          });
         }
         
         ctx.restore();
