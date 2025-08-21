@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, X, Edit3, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PageNavigationProps } from '../../types/whiteboard';
+import ConfirmModal from '../ui/ConfirmModal';
 
 /**
  * Composant pour naviguer entre les pages du whiteboard
@@ -15,6 +16,8 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
 }) => {
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string>('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
 
   const currentPageIndex = pages.findIndex(page => page.id === currentPageId);
   const canGoPrevious = currentPageIndex > 0;
@@ -56,6 +59,11 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
     if (canGoNext) {
       onPageChange(pages[currentPageIndex + 1].id);
     }
+  };
+
+  const requestDeletePage = (id: string, name: string) => {
+    setPendingDelete({ id, name });
+    setConfirmOpen(true);
   };
 
   return (
@@ -132,9 +140,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (confirm(`Êtes-vous sûr de vouloir supprimer "${page.name}" ?`)) {
-                        onDeletePage(page.id);
-                      }
+                      requestDeletePage(page.id, page.name);
                     }}
                     className="p-1 hover:bg-red-100 text-red-500 rounded transition-colors"
                     title="Supprimer"
@@ -157,6 +163,27 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
         <Plus size={16} />
         <span>Nouvelle page</span>
       </button>
+
+      {/* Confirm delete modal */}
+      <ConfirmModal
+        open={confirmOpen}
+        title="Delete page?"
+        description={`Are you sure you want to delete "${pendingDelete?.name ?? ''}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        danger
+        onConfirm={() => {
+          if (pendingDelete) {
+            onDeletePage(pendingDelete.id);
+          }
+          setConfirmOpen(false);
+          setPendingDelete(null);
+        }}
+        onCancel={() => {
+          setConfirmOpen(false);
+          setPendingDelete(null);
+        }}
+      />
     </div>
   );
 };
