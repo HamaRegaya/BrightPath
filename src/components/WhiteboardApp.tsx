@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import Whiteboard from './Whiteboard';
+import MultiPageWhiteboard from './MultiPageWhiteboard';
 import Toolbar from './Toolbar';
 import AIAssistant from './AIAssistant';
 import Header from './Header';
@@ -42,7 +42,7 @@ function WhiteboardApp() {
             
             {/* Main Whiteboard Area */}
             <div className="flex-1 flex flex-col">
-              <Whiteboard />
+              <MultiPageWhiteboard />
             </div>
             
             {/* Right Sidebar - AI Assistant */}

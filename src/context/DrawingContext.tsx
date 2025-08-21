@@ -51,6 +51,9 @@ interface DrawingContextType {
   findStrokeAt: (x: number, y: number) => Stroke | null;
   exportCanvas: (canvas: HTMLCanvasElement) => void;
   getCanvasImage: (canvas: HTMLCanvasElement) => string;
+  // Page management methods
+  loadPageData: (strokes: Stroke[], aiPoints: AIAssistancePoint[]) => void;
+  getCurrentPageData: () => { strokes: Stroke[]; aiPoints: AIAssistancePoint[] };
 }
 
 const DrawingContext = createContext<DrawingContextType | undefined>(undefined);
@@ -77,7 +80,6 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
   const [currentSubject, setCurrentSubject] = useState('math');
   const [sessionTitle, setSessionTitle] = useState('My Homework Session');
   const [aiAssistancePoints, setAIAssistancePoints] = useState<AIAssistancePoint[]>([]);
-  const [lastStrokeTime, setLastStrokeTime] = useState<number>(0);
   const [sparkleTimeout, setSparkleTimeout] = useState<number | null>(null);
   const [typingIntervals, setTypingIntervals] = useState<Map<string, number>>(new Map());
   const [selectedStrokeId, setSelectedStrokeId] = useState<string | null>(null);
@@ -112,9 +114,6 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
 
     // Only set up delayed sparkle for pen strokes (handwriting)
     if (stroke.tool === 'pen' && stroke.path.length > 5) {
-      // Update last stroke time
-      setLastStrokeTime(Date.now());
-      
       // Set up delayed sparkle appearance
       const timeoutId = setTimeout(() => {
         const lastPoint = stroke.path[stroke.path.length - 1];
@@ -670,6 +669,20 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     };
   }, [sparkleTimeout, typingIntervals]);
 
+  // Page management methods
+  const loadPageData = useCallback((pageStrokes: Stroke[], pageAiPoints: AIAssistancePoint[]) => {
+    setStrokes(pageStrokes);
+    setAIAssistancePoints(pageAiPoints);
+    setSelectedStrokeId(null); // Clear selection when switching pages
+  }, []);
+
+  const getCurrentPageData = useCallback(() => {
+    return {
+      strokes,
+      aiPoints: aiAssistancePoints
+    };
+  }, [strokes, aiAssistancePoints]);
+
   const value: DrawingContextType = {
     tool,
     setTool,
@@ -701,7 +714,9 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     setSelectedStrokeId,
     findStrokeAt,
     exportCanvas,
-    getCanvasImage
+    getCanvasImage,
+    loadPageData,
+    getCurrentPageData
   };
 
   return (
