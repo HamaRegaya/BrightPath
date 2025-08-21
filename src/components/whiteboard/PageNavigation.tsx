@@ -67,7 +67,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   };
 
   return (
-    <div className="bg-white border-t border-gray-200 px-4 py-2 flex items-center justify-between shadow-sm">
+    <div className="bg-white border-t border-gray-200 px-3 py-1.5 flex items-center justify-between shadow-sm">
       {/* Navigation gauche/droite */}
       <div className="flex items-center space-x-2">
         <button
@@ -94,7 +94,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
       </div>
 
       {/* Onglets des pages */}
-      <div className="flex items-center space-x-1 flex-1 mx-4 overflow-x-auto">
+  <div className="flex items-center space-x-1 flex-1 mx-3 overflow-x-auto">
         {pages.map((page) => (
           <div
             key={page.id}
@@ -157,7 +157,7 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
       {/* Bouton ajouter page */}
       <button
         onClick={onAddPage}
-        className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+        className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
         title="Ajouter une page"
       >
         <Plus size={16} />

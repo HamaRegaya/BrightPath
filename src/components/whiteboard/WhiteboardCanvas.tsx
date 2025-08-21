@@ -41,7 +41,7 @@ export const WhiteboardCanvas: React.FC<WhiteboardCanvasProps> = ({
   return (
     <canvas
       ref={canvasRef}
-      className={`w-full h-full ${getCursorClass(tool)}`}
+      className={`flex-1 block w-full h-full min-h-0 ${getCursorClass(tool)}`}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}

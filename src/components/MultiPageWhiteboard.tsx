@@ -107,13 +107,13 @@ const MultiPageWhiteboard: React.FC = () => {
         </button>
       </div>
 
-      {/* Whiteboard principal - prend toute la hauteur disponible moins la navigation */}
-      <div className="flex-1 min-h-0">
+  {/* Whiteboard principal - prend toute la hauteur disponible moins la navigation */}
+  <div className="flex-1 min-h-0 flex">
         <Whiteboard />
       </div>
 
       {/* Navigation des pages - hauteur fixe */}
-      <div className="flex-shrink-0">
+  <div className="flex-shrink-0">
         <PageNavigation
           pages={pages}
           currentPageId={currentPageId}

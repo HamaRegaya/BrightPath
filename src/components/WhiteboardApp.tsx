@@ -34,14 +34,14 @@ function WhiteboardApp() {
   return (
     <DrawingProvider>
       <AIProvider>
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex flex-col">
+        <div className="h-screen overflow-hidden bg-gradient-to-br from-gray-50 to-blue-50 flex flex-col">
           <Header />
-          <div className="flex-1 flex relative">
+          <div className="flex-1 min-h-0 flex relative overflow-hidden">
             {/* Left Sidebar - Drawing Tools */}
             <Toolbar />
             
             {/* Main Whiteboard Area */}
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 min-h-0 flex flex-col">
               <MultiPageWhiteboard />
             </div>
             

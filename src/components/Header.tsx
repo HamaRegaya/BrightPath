@@ -46,7 +46,7 @@ const Header: React.FC = () => {
   const currentSubjectData = subjects.find(s => s.id === currentSubject) || subjects[0];
 
   return (
-    <header className="bg-gradient-to-r from-white to-gray-50 border-b border-gray-200 px-6 py-4 shadow-sm">
+    <header className="bg-gradient-to-r from-white to-gray-50 border-b border-gray-200 px-4 py-2 shadow-sm">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center space-x-6">
           {/* Logo and Brand */}

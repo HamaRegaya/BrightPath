@@ -71,7 +71,7 @@ const Whiteboard: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-white m-4 rounded-lg shadow-sm border border-gray-200 relative overflow-hidden">
+    <div className="flex-1 min-h-0 flex bg-white mx-3 my-1 md:mx-4 md:my-2 rounded-lg shadow-sm border border-gray-200 relative overflow-hidden">
       <WhiteboardCanvas
         canvasRef={canvasRef}
         tool={tool}

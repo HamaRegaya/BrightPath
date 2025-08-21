@@ -60,7 +60,7 @@ const Toolbar: React.FC = () => {
   };
 
   return (
-    <div className="w-24 bg-white border-r border-gray-200 flex flex-col py-6 shadow-sm">
+    <div className="w-24 bg-white border-r border-gray-200 flex flex-col py-6 shadow-sm h-full min-h-0 overflow-y-auto">
       {/* Tool Groups Container */}
       <div className="flex flex-col items-center space-y-6">
         
