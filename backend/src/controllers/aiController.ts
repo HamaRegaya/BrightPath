@@ -7,7 +7,7 @@ export class AIController {
    */
   async chatWithTutor(req: Request, res: Response): Promise<void> {
     try {
-      const { history, subject } = req.body;
+      const { history, subject, strokes, imageDataUrl } = req.body;
 
       if (!Array.isArray(history)) {
         res.status(400).json({ error: 'History must be an array of chat messages' });
@@ -19,7 +19,24 @@ export class AIController {
         return;
       }
 
-      const response = await aiService.chatWithTutor(history as ChatMessage[], subject);
+      // Validate strokes if provided
+      if (strokes && !Array.isArray(strokes)) {
+        res.status(400).json({ error: 'Strokes must be an array if provided' });
+        return;
+      }
+
+      // Validate imageDataUrl if provided
+      if (imageDataUrl && typeof imageDataUrl !== 'string') {
+        res.status(400).json({ error: 'ImageDataUrl must be a string if provided' });
+        return;
+      }
+
+      const response = await aiService.chatWithTutor(
+        history as ChatMessage[], 
+        subject,
+        strokes as Stroke[],
+        imageDataUrl
+      );
       
       res.json({ 
         success: true, 

@@ -63,10 +63,28 @@ class APIClient {
     return result.status;
   }
 
-  async chatWithTutor(history: ChatMessage[], subject: string): Promise<string> {
+  async chatWithTutor(
+    history: ChatMessage[], 
+    subject: string, 
+    strokes?: Stroke[], 
+    imageDataUrl?: string
+  ): Promise<string> {
+    const requestBody: any = { history, subject };
+    
+    // Include whiteboard data if provided
+    if (strokes && strokes.length > 0) {
+      requestBody.strokes = strokes;
+      console.log('📤 Sending whiteboard strokes to tutor chat');
+    }
+    
+    if (imageDataUrl) {
+      requestBody.imageDataUrl = imageDataUrl;
+      console.log('📤 Sending whiteboard image to tutor chat');
+    }
+    
     const result = await this.makeRequest<{ response: string }>('/ai/chat', {
       method: 'POST',
-      body: JSON.stringify({ history, subject }),
+      body: JSON.stringify(requestBody),
     });
     return result.response;
   }

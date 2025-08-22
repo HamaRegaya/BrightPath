@@ -7,9 +7,17 @@ export interface Message {
   timestamp: Date;
 }
 
+export interface Stroke {
+  id: string;
+  tool: string;
+  path: Array<{ x: number; y: number }>;
+  color: string;
+  text?: string;
+}
+
 interface AIContextType {
   messages: Message[];
-  sendMessage: (text: string, subject: string) => Promise<void>;
+  sendMessage: (text: string, subject: string, strokes?: Stroke[], imageDataUrl?: string) => Promise<void>;
   isLoading: boolean;
   clearMessages: () => void;
 }
@@ -32,7 +40,12 @@ export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const sendMessage = async (text: string, subject: string) => {
+  const sendMessage = async (
+    text: string, 
+    subject: string, 
+    strokes?: Stroke[], 
+    imageDataUrl?: string
+  ) => {
     setIsLoading(true);
     
     // Add user message
@@ -50,7 +63,7 @@ export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
         { role: 'user', content: text }
       ] as any;
 
-      const aiText = await apiClient.chatWithTutor(history, subject);
+      const aiText = await apiClient.chatWithTutor(history, subject, strokes, imageDataUrl);
       const aiMessage: Message = { sender: 'ai', text: aiText, timestamp: new Date() };
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {

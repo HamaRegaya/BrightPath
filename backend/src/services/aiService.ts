@@ -76,7 +76,12 @@ class AIService {
   /**
    * Chat with AI tutor
    */
-  async chatWithTutor(history: ChatMessage[], subject: string): Promise<string> {
+  async chatWithTutor(
+    history: ChatMessage[], 
+    subject: string, 
+    strokes?: Stroke[], 
+    imageDataUrl?: string
+  ): Promise<string> {
     const rateCheck = this.canMakeCall();
     if (!rateCheck.allowed) {
       throw new Error(`Rate limit exceeded. Please wait ${Math.ceil(rateCheck.resetTime / 1000)} seconds.`);
@@ -86,24 +91,68 @@ class AIService {
       throw new Error('AI API key not configured');
     }
 
+    // Build context with whiteboard content if available
+    let contextInfo = `You are BrightPath, an AI tutor helping students with ${subject}. Provide clear, helpful guidance that matches the level of their problem. Give practical help and encouragement.`;
+    
+    if (strokes && strokes.length > 0) {
+      const boardDescription = this.convertStrokesToText(strokes, subject);
+      contextInfo += `\n\nCurrent whiteboard content:\n${boardDescription}`;
+    }
+
     const systemPrompt: ChatMessage = {
       role: 'system',
-      content: `You are BrightPath, an AI tutor helping students with ${subject}. Provide clear, helpful guidance that matches the level of their problem. Give practical help and encouragement.`
+      content: contextInfo
     };
 
     const messages: ChatMessage[] = [systemPrompt, ...history];
 
     try {
-      const response = await this.client.chat.completions.create({
-        model: 'openai/gpt-5-chat-latest',
-        messages: messages as any,
-        temperature: 0.7,
-        top_p: 0.7,
-        frequency_penalty: 0.3,
-        max_tokens: 180,
-      });
+      // If we have image data, use vision model
+      if (imageDataUrl) {
+        const response = await this.client.chat.completions.create({
+          model: 'openai/gpt-5-chat-latest',
+          messages: [
+            {
+              role: 'system',
+              content: contextInfo
+            },
+            ...history.slice(0, -1), // All history except the last message
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: history[history.length - 1]?.content || 'Can you help me with this?'
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: imageDataUrl
+                  }
+                }
+              ]
+            }
+          ] as any,
+          temperature: 0.7,
+          top_p: 0.7,
+          frequency_penalty: 0.3,
+          max_tokens: 180,
+        });
 
-      return response.choices[0]?.message?.content?.trim() || "I'm here to help. What part is most confusing?";
+        return response.choices[0]?.message?.content?.trim() || "I can see your work. What specific part would you like help with?";
+      } else {
+        // Text-only chat
+        const response = await this.client.chat.completions.create({
+          model: 'openai/gpt-5-chat-latest',
+          messages: messages as any,
+          temperature: 0.7,
+          top_p: 0.7,
+          frequency_penalty: 0.3,
+          max_tokens: 180,
+        });
+
+        return response.choices[0]?.message?.content?.trim() || "I'm here to help. What part is most confusing?";
+      }
     } catch (err: any) {
       console.error('Tutor chat error:', err);
       
@@ -116,7 +165,7 @@ class AIService {
         throw new Error('AI service access denied. Please check API permissions.');
       }
       
-      // Fallback to helpful context-aware guidance (20 words max)
+      // Fallback to helpful context-aware guidance
       return subject === 'math'
         ? 'Try isolating the variable step by step. What operation should you do first?'
         : 'Break it into smaller parts. What\'s the main concept here?';

@@ -56,6 +56,8 @@ interface DrawingContextType {
   findStrokeAt: (x: number, y: number) => Stroke | null;
   exportCanvas: (canvas: HTMLCanvasElement) => void;
   getCanvasImage: (canvas: HTMLCanvasElement) => string;
+  getCurrentCanvasImage: () => string | null;
+  setCurrentCanvas: (canvas: HTMLCanvasElement | null) => void;
   // Page management methods
   loadPageData: (strokes: Stroke[], aiPoints: AIAssistancePoint[]) => void;
   getCurrentPageData: () => { strokes: Stroke[]; aiPoints: AIAssistancePoint[] };
@@ -88,6 +90,7 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
   const [sparkleTimeout, setSparkleTimeout] = useState<NodeJS.Timeout | null>(null);
   const [typingIntervals, setTypingIntervals] = useState<Map<string, NodeJS.Timeout>>(new Map());
   const [selectedStrokeId, setSelectedStrokeId] = useState<string | null>(null);
+  const [currentCanvas, setCurrentCanvas] = useState<HTMLCanvasElement | null>(null);
   // Cache loaded images by stroke id to avoid reloading on each redraw
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
 
@@ -275,6 +278,14 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       console.error('Canvas image capture failed:', error);
       return '';
     }
+  };
+
+  const getCurrentCanvasImage = (): string | null => {
+    if (!currentCanvas) {
+      console.warn('No current canvas available for image capture');
+      return null;
+    }
+    return getCanvasImage(currentCanvas);
   };
 
   const addAIAssistancePoint = (point: AIAssistancePoint) => {
@@ -791,6 +802,8 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
     findStrokeAt,
     exportCanvas,
     getCanvasImage,
+    getCurrentCanvasImage,
+    setCurrentCanvas,
     loadPageData,
     getCurrentPageData
   };

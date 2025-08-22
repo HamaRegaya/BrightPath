@@ -22,8 +22,9 @@ const Whiteboard: React.FC = () => {
     redrawCanvas,
     aiAssistancePoints,
     generateAIText,
-  removeAIText,
-  addStroke
+    removeAIText,
+    addStroke,
+    setCurrentCanvas
   } = useDrawing();
   
   // Hooks personnalisés pour la logique modulaire
@@ -49,6 +50,11 @@ const Whiteboard: React.FC = () => {
       redrawCanvas(canvasRef.current);
     }
   }, [strokes, redrawCanvas]);
+
+  // Set the current canvas reference in the context
+  useEffect(() => {
+    setCurrentCanvas(canvasRef.current);
+  }, [canvasRef.current, setCurrentCanvas]);
 
   // Gestionnaire pour les clics sur les sparkles IA
   const handleSparkleClick = (pointId: string) => {

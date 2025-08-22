@@ -6,7 +6,7 @@ import ChatMathText from './ChatMathText';
 
 const AIAssistant: React.FC = () => {
   const { messages, sendMessage, isLoading } = useAI();
-  const { currentSubject } = useDrawing();
+  const { currentSubject, strokes, getCurrentCanvasImage } = useDrawing();
   const [isExpanded, setIsExpanded] = useState(true);
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -22,7 +22,19 @@ const AIAssistant: React.FC = () => {
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
     
-    await sendMessage(inputMessage, currentSubject);
+    // Convert drawing strokes to the format expected by the API
+    const apiStrokes = strokes.map(stroke => ({
+      id: stroke.id,
+      tool: stroke.tool,
+      path: stroke.path,
+      color: stroke.color,
+      text: (stroke as any).text || undefined
+    }));
+    
+    // Capture current canvas image for AI vision analysis
+    const canvasImage = getCurrentCanvasImage();
+    
+    await sendMessage(inputMessage, currentSubject, apiStrokes, canvasImage || undefined);
     setInputMessage('');
   };
 
