@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { chatWithTutor } from '../services/aiAnalysisService';
+import { apiClient } from '../services/apiClient';
 
 export interface Message {
   sender: 'user' | 'ai';
@@ -50,12 +50,12 @@ export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
         { role: 'user', content: text }
       ] as any;
 
-      const aiText = await chatWithTutor(history, subject);
+      const aiText = await apiClient.chatWithTutor(history, subject);
       const aiMessage: Message = { sender: 'ai', text: aiText, timestamp: new Date() };
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('AI response error:', error);
-  setMessages(prev => [...prev, { sender: 'ai', text: "I'm offline now. Try again soon.", timestamp: new Date() }]);
+      setMessages(prev => [...prev, { sender: 'ai', text: "I'm offline now. Try again soon.", timestamp: new Date() }]);
     } finally {
       setIsLoading(false);
     }

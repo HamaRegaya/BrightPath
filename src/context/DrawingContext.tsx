@@ -290,8 +290,8 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       prev.map(p => p.id === pointId ? { ...p, isLoading: true, isVisible: false } : p)
     );
 
-    // Import the AI analysis service
-    const { analyzeBoard, analyzeBoardWithImage } = await import('../services/aiAnalysisService');
+    // Import the API client for backend communication
+    const { apiClient } = await import('../services/apiClient');
     
     let aiText: string;
     
@@ -300,15 +300,16 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       if (canvas && strokes.length > 3) {
         const imageDataUrl = getCanvasImage(canvas);
         if (imageDataUrl) {
-          console.log('Using AI image analysis for enhanced context');
-          aiText = await analyzeBoardWithImage(imageDataUrl, currentSubject);
+          console.log('🖼️ Using AI image analysis for enhanced context');
+          // Now sending image data to backend for visual analysis
+          aiText = await apiClient.analyzeBoard(strokes, currentSubject, sessionTitle, imageDataUrl);
         } else {
           // Fall back to text analysis
-          aiText = await analyzeBoard(strokes, currentSubject, sessionTitle);
+          aiText = await apiClient.analyzeBoard(strokes, currentSubject, sessionTitle);
         }
       } else {
         // Use text-based analysis for fewer strokes or no canvas
-        aiText = await analyzeBoard(strokes, currentSubject, sessionTitle);
+        aiText = await apiClient.analyzeBoard(strokes, currentSubject, sessionTitle);
       }
     } catch (error) {
       console.error('Dynamic AI analysis failed, using fallback:', error);
