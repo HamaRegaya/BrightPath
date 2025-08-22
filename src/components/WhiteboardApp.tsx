@@ -7,10 +7,18 @@ import { DrawingProvider } from '../context/DrawingContext';
 import { AIProvider } from '../context/AIContext';
 
 function WhiteboardApp() {
+  // Prevent body scrolling
+  useEffect(() => {
+    document.body.classList.add('no-scroll');
+    return () => {
+      document.body.classList.remove('no-scroll');
+    };
+  }, []);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-  (window as any).__shiftKey = e.shiftKey;
+      (window as any).__shiftKey = e.shiftKey;
       // Prevent default browser shortcuts that might interfere
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {

@@ -12,12 +12,24 @@ const AIAssistant: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: "smooth", 
+        block: "end",
+        inline: "nearest"
+      });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // Only scroll to bottom when there are messages and the component is expanded
+    if (messages.length > 0 && isExpanded) {
+      // Use setTimeout to ensure DOM is updated before scrolling
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+  }, [messages.length, isExpanded]); // Only depend on message count, not the entire messages array
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
@@ -129,7 +141,7 @@ const AIAssistant: React.FC = () => {
       </div>
 
       {/* Messages */}
-  <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 space-y-4 scroll-smooth" style={{ scrollBehavior: 'smooth' }}>
         {messages.length === 0 ? (
           <div className="text-center space-y-4">
             <div className="text-gray-500 text-sm">
@@ -183,6 +195,9 @@ const AIAssistant: React.FC = () => {
             </div>
           </div>
         )}
+        
+        {/* Messages end reference - positioned at the very bottom */}
+        <div ref={messagesEndRef} style={{ height: '1px' }} />
       </div>
 
       {/* Input */}
@@ -225,9 +240,6 @@ const AIAssistant: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* Messages end reference */}
-      <div ref={messagesEndRef} />
     </div>
   );
 };

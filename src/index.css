@@ -12,6 +12,18 @@ body {
   font-style: normal;
 }
 
+/* Prevent scrolling on whiteboard page */
+.whiteboard-page {
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Prevent body scroll when on whiteboard */
+.no-scroll {
+  overflow: hidden;
+}
+
 /* AI Text Font - using Urbanist instead of Outfit */
 .urbanist-ai-text {
   font-family: "Urbanist", sans-serif;
