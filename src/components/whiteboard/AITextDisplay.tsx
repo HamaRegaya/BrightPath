@@ -30,7 +30,7 @@ export const AITextDisplay: React.FC<AITextDisplayProps> = ({
         >
           <MathText
             text={aiText.text}
-            position={{ x: 0, y: 0 }} // Position relative au conteneur
+            position={{ x: 0, y: 0 }} // Position relative to container
             maxWidth={Math.min(400, canvasRef.current ? canvasRef.current.width - aiText.position.x - 20 : 400)}
           />
           {/* Bouton de suppression positionné dans le coin supérieur droit */}

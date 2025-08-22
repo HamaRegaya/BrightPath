@@ -85,8 +85,8 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
   const [currentSubject, setCurrentSubject] = useState('math');
   const [sessionTitle, setSessionTitle] = useState('My Homework Session');
   const [aiAssistancePoints, setAIAssistancePoints] = useState<AIAssistancePoint[]>([]);
-  const [sparkleTimeout, setSparkleTimeout] = useState<number | null>(null);
-  const [typingIntervals, setTypingIntervals] = useState<Map<string, number>>(new Map());
+  const [sparkleTimeout, setSparkleTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [typingIntervals, setTypingIntervals] = useState<Map<string, NodeJS.Timeout>>(new Map());
   const [selectedStrokeId, setSelectedStrokeId] = useState<string | null>(null);
   // Cache loaded images by stroke id to avoid reloading on each redraw
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());

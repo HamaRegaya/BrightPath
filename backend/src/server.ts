@@ -7,6 +7,7 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 
 import aiRoutes from './routes/aiRoutes';
+import authRoutes from './routes/authRoutes';
 import { corsMiddleware, validateRequest, errorHandler } from './middleware/middleware';
 
 // Load environment variables
@@ -83,6 +84,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/ai', aiLimiter, aiRoutes);
+app.use('/api/auth', authRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -94,7 +96,14 @@ app.use('*', (req, res) => {
       'GET /api/ai/status',
       'POST /api/ai/chat',
       'POST /api/ai/analyze',
-      'POST /api/ai/explain'
+      'POST /api/ai/explain',
+      'POST /api/auth/signup',
+      'POST /api/auth/signin',
+      'POST /api/auth/signout',
+      'GET /api/auth/user',
+      'POST /api/auth/refresh',
+      'POST /api/auth/reset-password',
+      'GET /api/auth/status'
     ]
   });
 });
@@ -107,8 +116,10 @@ app.listen(PORT, () => {
   console.log(`🚀 BrightPath Backend Server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`🤖 AI API: http://localhost:${PORT}/api/ai`);
+  console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`);
   console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
   console.log(`🔑 AI API configured: ${process.env.AI_API_KEY ? 'Yes' : 'No'}`);
+  console.log(`📚 Supabase configured: ${process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY ? 'Yes' : 'No'}`);
 });
 
 export default app;

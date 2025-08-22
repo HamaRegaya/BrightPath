@@ -1,13 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import { AuroraBackground } from './ui/aurora-background';
+import AuthModal from './auth/AuthModal';
+import { authService } from '../services/authService';
 
 const HomePage: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   // Trigger entrance animation
   useEffect(() => {
     setIsVisible(true);
+    
+    // Check if user is already authenticated
+    const checkAuth = async () => {
+      if (authService.isAuthenticated()) {
+        const result = await authService.getCurrentUser();
+        if (result.success) {
+          setIsAuthenticated(true);
+          setUser(result.user);
+        }
+      }
+    };
+    
+    checkAuth();
   }, []);
+
+  const handleSignUp = () => {
+    setAuthMode('signup');
+    setIsAuthModalOpen(true);
+  };
+
+  const handleSignIn = () => {
+    setAuthMode('signin');
+    setIsAuthModalOpen(true);
+  };
+
+  const handleSignOut = async () => {
+    await authService.signOut();
+    setIsAuthenticated(false);
+    setUser(null);
+  };
+
+  const handleAuthSuccess = async () => {
+    const result = await authService.getCurrentUser();
+    if (result.success) {
+      setIsAuthenticated(true);
+      setUser(result.user);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -38,13 +81,47 @@ const HomePage: React.FC = () => {
                 <a href="#contact" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-blue-50">
                   Contact
                 </a>
-                <button 
-                  onClick={() => window.location.href = '/whiteboard'}
-                  className="relative px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                >
-                  <span className="relative z-10">Start Learning</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
-                </button>
+                
+                {isAuthenticated ? (
+                  <div className="flex items-center space-x-3">
+                    <span className="text-gray-700 text-sm">
+                      Welcome, {user?.email?.split('@')[0] || 'User'}!
+                    </span>
+                    <button 
+                      onClick={() => window.location.href = '/whiteboard'}
+                      className="relative px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    >
+                      <span className="relative z-10">Continue Learning</span>
+                    </button>
+                    <button 
+                      onClick={handleSignOut}
+                      className="px-3 py-2 text-gray-700 hover:text-red-600 text-sm font-medium transition-all duration-300"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-3">
+                    <button 
+                      onClick={handleSignIn}
+                      className="px-4 py-2 text-gray-700 hover:text-blue-600 text-sm font-medium transition-all duration-300"
+                    >
+                      Sign In
+                    </button>
+                    <button 
+                      onClick={handleSignUp}
+                      className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    >
+                      Sign Up
+                    </button>
+                    <button 
+                      onClick={() => window.location.href = '/whiteboard'}
+                      className="relative px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all duration-300"
+                    >
+                      Try Demo
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -101,31 +178,63 @@ const HomePage: React.FC = () => {
                 <div className={`mt-10 flex flex-wrap gap-4 justify-center lg:justify-start transform transition-all duration-1000 delay-1000 ${
                   isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
                 }`}>
-                  <button 
-                    onClick={() => window.location.href = '/dashboard'}
-                    className="group relative px-8 py-4 bg-gray-900/80 backdrop-blur-sm border border-gray-700 text-white rounded-xl font-medium text-base shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 hover:bg-gray-800/90 overflow-hidden"
-                  >
-                    <span className="relative z-10 flex items-center gap-2">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                      Dashboard
-                    </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </button>
-                  
-                  <button 
-                    onClick={() => window.location.href = '/whiteboard'}
-                    className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium text-base shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 hover:from-blue-700 hover:to-purple-700 overflow-hidden"
-                  >
-                    <span className="relative z-10 flex items-center gap-2">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      Start Learning
-                    </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-pink-500 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
-                  </button>
+                  {isAuthenticated ? (
+                    <>
+                      <button 
+                        onClick={() => window.location.href = '/dashboard'}
+                        className="group relative px-8 py-4 bg-gray-900/80 backdrop-blur-sm border border-gray-700 text-white rounded-xl font-medium text-base shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 hover:bg-gray-800/90 overflow-hidden"
+                      >
+                        <span className="relative z-10 flex items-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                          Dashboard
+                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      </button>
+                      
+                      <button 
+                        onClick={() => window.location.href = '/whiteboard'}
+                        className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium text-base shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 hover:from-blue-700 hover:to-purple-700 overflow-hidden"
+                      >
+                        <span className="relative z-10 flex items-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          Continue Learning
+                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-pink-500 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button 
+                        onClick={handleSignUp}
+                        className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium text-base shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 hover:from-blue-700 hover:to-purple-700 overflow-hidden"
+                      >
+                        <span className="relative z-10 flex items-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Get Started Free
+                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-pink-500 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+                      </button>
+                      
+                      <button 
+                        onClick={() => window.location.href = '/whiteboard'}
+                        className="group relative px-8 py-4 bg-gray-900/80 backdrop-blur-sm border border-gray-700 text-white rounded-xl font-medium text-base shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 hover:bg-gray-800/90 overflow-hidden"
+                      >
+                        <span className="relative z-10 flex items-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          Try Demo
+                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -630,6 +739,14 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </footer>
+      
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={handleAuthSuccess}
+        defaultMode={authMode}
+      />
     </div>
   );
 };
