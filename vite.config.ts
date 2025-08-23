@@ -13,4 +13,15 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+    sourcemap: false,
+    minify: 'esbuild', // Utiliser esbuild au lieu de terser
+    target: 'esnext',
+  },
+  base: '/',
 });
