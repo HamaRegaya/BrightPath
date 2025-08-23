@@ -36,8 +36,14 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    console.log(`CORS check for origin: ${origin}`);
+    console.log(`Allowed origins:`, allowedOrigins);
+    
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('No origin - allowing');
+      return callback(null, true);
+    }
     
     // Check if origin matches any allowed origin
     const isAllowed = allowedOrigins.some(allowedOrigin => {
@@ -50,6 +56,7 @@ const corsOptions = {
     });
     
     if (isAllowed) {
+      console.log(`Origin ${origin} is allowed`);
       callback(null, true);
     } else {
       console.warn(`CORS: Origin ${origin} not allowed`);
@@ -102,7 +109,8 @@ app.get('/health', (req, res) => {
     status: 'OK', 
     timestamp: new Date().toISOString(),
     service: 'BrightPath Backend',
-    version: '1.0.0'
+    version: '1.0.1', // Updated version to trigger redeploy
+    cors: 'Updated CORS configuration'
   });
 });
 
