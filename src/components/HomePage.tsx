@@ -3,7 +3,11 @@ import { AuroraBackground } from './ui/aurora-background';
 import AuthModal from './auth/AuthModal';
 import { authService } from '../services/authService';
 
+console.log('HomePage.tsx loaded');
+
 const HomePage: React.FC = () => {
+  console.log('HomePage component rendering');
+  
   const [isVisible, setIsVisible] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
@@ -12,16 +16,22 @@ const HomePage: React.FC = () => {
 
   // Trigger entrance animation
   useEffect(() => {
+    console.log('HomePage useEffect running');
     setIsVisible(true);
     
     // Check if user is already authenticated
     const checkAuth = async () => {
-      if (authService.isAuthenticated()) {
-        const result = await authService.getCurrentUser();
-        if (result.success) {
-          setIsAuthenticated(true);
-          setUser(result.user);
+      try {
+        console.log('Checking authentication...');
+        if (authService.isAuthenticated()) {
+          const result = await authService.getCurrentUser();
+          if (result.success) {
+            setIsAuthenticated(true);
+            setUser(result.user);
+          }
         }
+      } catch (error) {
+        console.error('Auth check error:', error);
       }
     };
     
