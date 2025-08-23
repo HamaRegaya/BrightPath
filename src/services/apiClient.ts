@@ -33,6 +33,8 @@ class APIClient {
     const url = `${this.baseURL}${endpoint}`;
     
     const response = await fetch(url, {
+      mode: 'cors',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
@@ -49,7 +51,10 @@ class APIClient {
   }
 
   async checkHealth(): Promise<{ status: string; timestamp: string }> {
-    const response = await fetch(`${this.baseURL.replace('/api', '')}/health`);
+    const response = await fetch(`${this.baseURL.replace('/api', '')}/health`, {
+      mode: 'cors',
+      credentials: 'include',
+    });
     return response.json();
   }
 

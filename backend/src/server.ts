@@ -27,11 +27,35 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173', 
   'http://localhost:5173/',
-  process.env.FRONTEND_URL
-].filter((origin): origin is string => Boolean(origin));
+  'https://bright-path-wheat.vercel.app',
+  'https://bright-path-wheat.vercel.app/',
+  process.env.FRONTEND_URL,
+  // Add common Vercel deployment patterns
+  /^https:\/\/bright-path.*\.vercel\.app$/,
+].filter((origin): origin is string | RegExp => Boolean(origin));
 
 const corsOptions = {
-  origin: allowedOrigins,
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin matches any allowed origin
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (typeof allowedOrigin === 'string') {
+        return allowedOrigin === origin;
+      } else if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return false;
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS: Origin ${origin} not allowed`);
+      callback(new Error('Not allowed by CORS'), false);
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 };
