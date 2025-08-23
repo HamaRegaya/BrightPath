@@ -34,11 +34,11 @@ class AIService {
     const apiKey = process.env.AI_API_KEY;
     const baseURL = process.env.AI_API_BASE_URL || 'https://api.aimlapi.com/v1';
     
-    console.log(`🔧 Initializing AI Service:`);
-    console.log(`   Base URL: ${baseURL}`);
-    console.log(`   API Key exists: ${!!apiKey}`);
-    console.log(`   API Key length: ${apiKey?.length || 0}`);
-    console.log(`   API Key first 8 chars: ${apiKey?.substring(0, 8)}...`);
+    // console.log(`🔧 Initializing AI Service:`);
+    // console.log(`   Base URL: ${baseURL}`);
+    // console.log(`   API Key exists: ${!!apiKey}`);
+    // console.log(`   API Key length: ${apiKey?.length || 0}`);
+    // console.log(`   API Key first 8 chars: ${apiKey?.substring(0, 8)}...`);
     
     // Initialize OpenAI client exactly like the working frontend version
     this.client = new OpenAI({

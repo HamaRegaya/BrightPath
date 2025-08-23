@@ -79,7 +79,10 @@ const ChatMathText: React.FC<ChatMathTextProps> = ({ text, className = '' }) => 
           <InlineMath key={index} math={content.content} />
         );
       } catch (error) {
-        console.error('KaTeX rendering error:', error);
+        // Only log errors in development mode
+        if (import.meta.env.DEV) {
+          console.error('KaTeX rendering error:', error);
+        }
         return (
           <span key={index} className="text-red-500 bg-red-50 px-1 rounded text-xs">
             Math Error: {content.content}

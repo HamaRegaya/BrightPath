@@ -32,8 +32,6 @@ class APIClient {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     
-    console.log(`🔗 Making API request to: ${url}`);
-    
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
@@ -74,12 +72,10 @@ class APIClient {
     // Include whiteboard data if provided
     if (strokes && strokes.length > 0) {
       requestBody.strokes = strokes;
-      console.log('📤 Sending whiteboard strokes to tutor chat');
     }
     
     if (imageDataUrl) {
       requestBody.imageDataUrl = imageDataUrl;
-      console.log('📤 Sending whiteboard image to tutor chat');
     }
     
     const result = await this.makeRequest<{ response: string }>('/ai/chat', {
@@ -95,7 +91,6 @@ class APIClient {
     // Include image data if provided
     if (imageDataUrl) {
       requestBody.imageDataUrl = imageDataUrl;
-      console.log('📤 Sending image data to backend for AI analysis');
     }
     
     const result = await this.makeRequest<{ analysis: string }>('/ai/analyze', {

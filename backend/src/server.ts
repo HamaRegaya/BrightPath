@@ -113,13 +113,13 @@ app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 BrightPath Backend Server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`🤖 AI API: http://localhost:${PORT}/api/ai`);
-  console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`);
-  console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
-  console.log(`🔑 AI API configured: ${process.env.AI_API_KEY ? 'Yes' : 'No'}`);
-  console.log(`📚 Supabase configured: ${process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY ? 'Yes' : 'No'}`);
+  console.log(`🚀 BrightPath Backend Server running ... `);
+  // console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  // console.log(`🤖 AI API: http://localhost:${PORT}/api/ai`);
+  // console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`);
+  // console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+  // console.log(`🔑 AI API configured: ${process.env.AI_API_KEY ? 'Yes' : 'No'}`);
+  // console.log(`📚 Supabase configured: ${process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY ? 'Yes' : 'No'}`);
 });
 
 export default app;

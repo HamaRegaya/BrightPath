@@ -311,7 +311,6 @@ export const DrawingProvider: React.FC<DrawingProviderProps> = ({ children }) =>
       if (canvas && strokes.length > 3) {
         const imageDataUrl = getCanvasImage(canvas);
         if (imageDataUrl) {
-          console.log('🖼️ Using AI image analysis for enhanced context');
           // Now sending image data to backend for visual analysis
           aiText = await apiClient.analyzeBoard(strokes, currentSubject, sessionTitle, imageDataUrl);
         } else {

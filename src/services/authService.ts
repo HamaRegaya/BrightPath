@@ -1,5 +1,5 @@
 // Authentication service for frontend API calls
-const API_BASE_URL = 'http://localhost:5000/api/auth';
+const API_BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/auth` : 'http://localhost:5000/api/auth';
 
 export interface AuthUser {
   id: string;
@@ -75,7 +75,6 @@ class AuthService {
       
       return result;
     } catch (error) {
-      console.error('Sign up error:', error);
       return {
         success: false,
         error: 'Failed to sign up. Please try again.',
@@ -99,7 +98,6 @@ class AuthService {
       
       return result;
     } catch (error) {
-      console.error('Sign in error:', error);
       return {
         success: false,
         error: 'Failed to sign in. Please try again.',
@@ -122,7 +120,6 @@ class AuthService {
       
       return result;
     } catch (error) {
-      console.error('Sign out error:', error);
       this.clearToken(); // Clear token anyway
       return {
         success: true,
@@ -153,7 +150,6 @@ class AuthService {
       
       return result;
     } catch (error) {
-      console.error('Get user error:', error);
       this.clearToken();
       return {
         success: false,
@@ -177,7 +173,6 @@ class AuthService {
       
       return result;
     } catch (error) {
-      console.error('Refresh session error:', error);
       return {
         success: false,
         error: 'Failed to refresh session',
@@ -196,7 +191,6 @@ class AuthService {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Reset password error:', error);
       return {
         success: false,
         error: 'Failed to send reset password email',
