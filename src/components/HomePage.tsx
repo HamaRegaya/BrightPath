@@ -272,7 +272,7 @@ const HomePage: React.FC = () => {
                   <div className="p-4 pt-2 h-full flex items-start justify-center">
                     <div className="relative w-full h-72 lg:h-96 rounded-xl overflow-hidden shadow-lg">
                       <img
-                        src="src/assets/images/student.png"
+                        src="https://i.imgur.com/QH4Nxjw.jpeg"
                         alt="Smart Board Interface"
                         className="w-full h-full object-cover"
                       />
